@@ -14,8 +14,13 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/compos/*": ["./src/*"]
-    }
+      "@/compos/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/assets/*": ["./src/assets/*"]
+    },
+    "baseUrl": ".",
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

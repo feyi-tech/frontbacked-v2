@@ -2,15 +2,12 @@ import Head from "next/head";
 import Image from "next/image";
 
 import Navigation from '@/components/Navigation';
-import HeroSection from '@/components/HeroSection';
-import DeveloperSection from '@/components/DeveloperSection';
-import UserSection from '@/components/UserSection';
 import ThemesSection from '@/components/ThemesSection';
 import VideoSection from '@/components/VideoSection';
 import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
 
-export default function Index() {
+export default function Themes() {
   return (
     <>
       <Head>
@@ -21,9 +18,6 @@ export default function Index() {
       </Head>
       <div className="min-h-screen bg-background">
         <Navigation />
-        <HeroSection />
-        <DeveloperSection />
-        <UserSection />
         <ThemesSection />
         <VideoSection />
         <FAQSection />

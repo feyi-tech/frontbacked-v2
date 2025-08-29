@@ -77,7 +77,7 @@ const UserSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button asChild className="shadow-elegant">
-                <Link href="/create-site">
+                <Link href="/dashboad/create-site">
                   <Globe className="mr-2 h-4 w-4" />
                   Generate Site Now
                 </Link>

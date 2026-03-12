@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Globe, Zap } from 'lucide-react';
-import githubGlobe from '@/assets/github-globe.jpg';
+import githubGlobe from '@/assets/world-map.svg';
 import Link from 'next/link';
 
 const HeroSection = () => {

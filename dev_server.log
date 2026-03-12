@@ -1,0 +1,9 @@
+
+> frontbacked-v2@0.1.0 dev
+> npm run open && next dev -p 3000
+
+
+> frontbacked-v2@0.1.0 open
+> start http://localhost:3000
+
+sh: 1: start: not found

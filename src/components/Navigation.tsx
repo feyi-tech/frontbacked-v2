@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useBackend } from '../lib/BackendProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import Swal from 'sweetalert2';
 
@@ -12,21 +12,17 @@ interface NavItem {
 }
 
 const navItemsNoAuth: NavItem[] = [
-  { name: 'Sites', href: '/themes' },
-  { name: 'Create Site', href: '/dashboard/create-site' },
-  { name: 'Create Theme', href: '/dashboard/create-theme' },
+  { name: 'Themes', href: '/themes' },
   { name: 'For Developers', href: '/theme-documentation' },
-  { name: 'About', href: '/about' },
-  { name: 'Sign In', href: '/sign-in' },
+  { name: 'About', href: '#' },
+  { name: 'Sign In', href: '/login' },
 ];
 
 const navItemsAuth: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Sites', href: '/themes' },
-  { name: 'Create Site', href: '/dashboard/create-site' },
-  { name: 'Create Theme', href: '/dashboard/create-theme' },
+  { name: 'Themes', href: '/themes' },
   { name: 'For Developers', href: '/theme-documentation' },
-  { name: 'About', href: '/about' },
+  { name: 'About', href: '#' },
 ]; 
 
 const Navigation = () => {
@@ -35,7 +31,7 @@ const Navigation = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const [navItems, setNavItems] = useState<NavItem[]>([]);
-  const { user, auth, signOutUser } = useBackend();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     if(user) {
@@ -55,18 +51,10 @@ const Navigation = () => {
       confirmButtonText: 'Yes, sign out!'
     }).then((result) => {
       if (result.isConfirmed) {
-        signOutUser().then(() => {
-          toast({
-            title: "Signed Out",
-            description: "You have been successfully signed out",
-          });
-        }).catch((error) => {
-          console.error("Sign-out error:", error);
-          toast({
-            title: "Error",
-            description: "Failed to sign out",
-            variant: "destructive",
-          });
+        logout();
+        toast({
+          title: "Signed Out",
+          description: "You have been successfully signed out",
         });
       } 
     })
@@ -102,7 +90,7 @@ const Navigation = () => {
               </Button>
               :
               <Button variant="default" size="sm" asChild>
-                <Link href="/create-site">Get Started</Link>
+                <Link href="/register">Get Started</Link>
               </Button>
             }
           </div>
@@ -145,7 +133,7 @@ const Navigation = () => {
                 </Button>
                 :
                 <Button variant="default" size="sm" asChild className="self-start">
-                  <Link href="/create-site">Get Started</Link>
+                  <Link href="/register">Get Started</Link>
                 </Button>
               }
             </div>

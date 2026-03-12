@@ -1,26 +1,24 @@
-import "@/compos/styles/globals.css";
+import "../styles/globals.css";
 import type { AppProps } from "next/app";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BackendProvider } from "../lib/BackendProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient();
+
 export default function App({ Component, pageProps }: AppProps) {
-  
   return (
-    <BackendProvider>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <Component {...pageProps} />
         </TooltipProvider>
-      </QueryClientProvider>
-    </BackendProvider>
-    
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
-

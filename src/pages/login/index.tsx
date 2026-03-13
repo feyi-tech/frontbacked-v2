@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  signInWithEmailAndPassword
-} from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-import { useBackend } from '../lib/BackendProvider';
-import router from 'next/router';
-import Navigation from '../components/Navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/router';
+import Navigation from '@/components/Navigation';
 import Head from 'next/head';
 
 const SignIn = () => {
@@ -21,11 +17,11 @@ const SignIn = () => {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
-  const { auth, user } = useBackend();
+  const { login, user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if(user) {
-      // Redirect to home or dashboard if already signed in
+    if(user && !loading) {
       const next = router.query.next as string;
       if(next) {
         router.push(next);
@@ -33,7 +29,7 @@ const SignIn = () => {
         router.push('/dashboard');
       }
     }
-  }, [user])
+  }, [user, loading, router]);
 
   const showMessage = (message: string, isError = false) => {
     setMessage(message);
@@ -47,7 +43,7 @@ const SignIn = () => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await login({ email, password });
       showMessage("Signed in successfully!");
     } catch (error: any) {
       console.error("Sign-in error:", error);
@@ -58,10 +54,7 @@ const SignIn = () => {
   return (
     <>
       <Head>
-        <title>Sign In</title>
-        <meta name="description" content="Generate sites" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Sign In | FrontBacked</title>
       </Head>
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Navigation />
@@ -126,9 +119,10 @@ const SignIn = () => {
               <div className="space-y-3">
                 <Button
                   onClick={handleSignIn}
+                  disabled={loading}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  Sign In
+                  {loading ? "Signing in..." : "Sign In"}
                 </Button>
                 
                 <div className="text-center">
@@ -136,7 +130,7 @@ const SignIn = () => {
                     Don't have an account?{' '}
                   </span>
                   <Link 
-                    href="/sign-up" 
+                    href="/register"
                     className="text-primary hover:text-primary/80 text-sm font-medium"
                   >
                     Create Account
@@ -145,7 +139,6 @@ const SignIn = () => {
               </div>
             </div>
 
-            {/* Message Box */}
             {message && (
               <div className={`text-center text-sm p-3 rounded-md ${
                 isError 

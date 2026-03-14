@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  currency?: string;
 }
 
 export interface AuthResponse {
@@ -16,6 +17,21 @@ export interface Theme {
   visibility: "public" | "private";
   creatorId: string;
   createdAt: string;
+  likes?: number;
+  usageCount?: number;
+  price?: number;
+  creator?: {
+    name: string;
+    photo?: string;
+  };
+  category?: string;
+  subcategory?: string;
+  pricing?: {
+    monthly: number;
+    quarterly: number;
+    yearly: number;
+    purchase: number;
+  };
 }
 
 export interface ThemeVersion {

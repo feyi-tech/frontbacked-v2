@@ -20,7 +20,6 @@ const sidebarItems = [
   { icon: Palette, label: 'Themes', href: '/themes' },
   { icon: Globe, label: 'Sites', href: '/sites' },
   { icon: Settings, label: 'Domains', href: '/domains' },
-  { icon: Github, label: 'GitHub', href: '/github' },
 ];
 
 export const Sidebar = ({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed: (v: boolean) => void }) => {

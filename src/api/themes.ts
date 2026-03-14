@@ -2,7 +2,10 @@ import { apiClient } from "./client";
 import { Theme, ThemeVersion } from "../types/api";
 
 export const themesApi = {
-  list: () => apiClient.get<Theme[]>("/themes"),
+  list: (params?: any) => {
+    const query = new URLSearchParams(params).toString();
+    return apiClient.get<any>(`/themes${query ? `?${query}` : ""}`);
+  },
   get: (id: string) => apiClient.get<Theme>(`/themes/${id}`),
   create: (data: any) => apiClient.post<Theme>("/themes", data),
   upload: (id: string, formData: FormData) =>
@@ -11,4 +14,35 @@ export const themesApi = {
     apiClient.get<ThemeVersion[]>(`/themes/${id}/versions`),
   connectRepo: (id: string, data: any) =>
     apiClient.post(`/themes/${id}/connect-repo`, data),
+
+  // New endpoints
+  getCategories: () => apiClient.get<any[]>("/themes/categories"),
+  getSubcategories: (categoryId: string) =>
+    apiClient.get<any[]>(`/themes/categories/${categoryId}/subcategories`),
+
+  getReviews: (themeId: string, page: number = 1) =>
+    apiClient.get<any>(`/themes/${themeId}/reviews?page=${page}`),
+  likeReview: (reviewId: string) =>
+    apiClient.post(`/reviews/${reviewId}/like`),
+  dislikeReview: (reviewId: string) =>
+    apiClient.post(`/reviews/${reviewId}/dislike`),
+
+  likeTheme: (themeId: string) =>
+    apiClient.post(`/themes/${themeId}/like`),
+
+  createUpload: (data: FormData) =>
+    apiClient.post<Theme>("/themes/create-upload", data),
+  createRepo: (data: any) =>
+    apiClient.post<Theme>("/themes/create-repo", data),
+
+  updateSettings: (id: string, data: any) =>
+    apiClient.put(`/themes/${id}/settings`, data),
+
+  getRepoHistory: (id: string) =>
+    apiClient.get<any[]>(`/themes/${id}/repo-history`),
+
+  addCustomDomain: (themeId: string, domain: string) =>
+    apiClient.post(`/themes/${themeId}/domains`, { domain }),
+  removeCustomDomain: (themeId: string, domainId: string) =>
+    apiClient.delete(`/themes/${themeId}/domains/${domainId}`),
 };

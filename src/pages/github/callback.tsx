@@ -13,11 +13,11 @@ const GithubCallback = () => {
       githubApi.callback(code as string)
         .then(() => {
           toast.success("GitHub connected successfully!");
-          router.push('/github');
+          router.push('/themes/create');
         })
         .catch((err) => {
           toast.error("GitHub connection failed: " + err.message);
-          router.push('/github');
+          router.push('/themes/create');
         });
     }
   }, [code, router]);

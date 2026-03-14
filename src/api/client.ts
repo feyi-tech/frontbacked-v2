@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../app-config";
+import { toast } from "../hooks/use-toast";
 
 class ApiClient {
   private get token(): string | null {
@@ -27,7 +28,7 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+      throw new Error(errorData.error || errorData.message || `Request failed with status ${response.status}`);
     }
 
     return response.json();

@@ -46,7 +46,7 @@ const SignIn = () => {
       await login({ email, password });
       showMessage("Signed in successfully!");
     } catch (error: any) {
-      console.error("Sign-in error:", error);
+      //console.error("Sign-in error:", error);
       showMessage(`Sign-in failed: ${error.message}`, true);
     }
   };

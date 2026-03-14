@@ -31,7 +31,7 @@ const Navigation = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const [navItems, setNavItems] = useState<NavItem[]>([]);
-  const { user, logout } = useAuth();
+  const { user, logOutAlert } = useAuth();
 
   useEffect(() => {
     if(user) {
@@ -40,25 +40,6 @@ const Navigation = () => {
       setNavItems(navItemsNoAuth);
     }
   }, [user]);
-
-  const signOutAlert = () => {
-    Swal.fire({
-      title: 'Are you sure you want to sign out?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, sign out!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        logout();
-        toast({
-          title: "Signed Out",
-          description: "You have been successfully signed out",
-        });
-      } 
-    })
-  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -85,7 +66,7 @@ const Navigation = () => {
             ))}
             {
               user? 
-              <Button variant="default" size="sm" onClick={signOutAlert}>
+              <Button variant="default" size="sm" onClick={logOutAlert}>
                 Sign Out
               </Button>
               :
@@ -128,7 +109,7 @@ const Navigation = () => {
               ))}
               {
                 user? 
-                <Button variant="default" size="sm" className="self-start" onClick={signOutAlert}>
+                <Button variant="default" size="sm" className="self-start" onClick={logOutAlert}>
                   Sign Out
                 </Button>
                 :

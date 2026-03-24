@@ -25,3 +25,4 @@ Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
  GET /dashboard 200 in 216ms
  ✓ Compiled in 697ms (489 modules)
  ✓ Compiled in 443ms (295 modules)
+ ✓ Compiled in 2.5s (295 modules)

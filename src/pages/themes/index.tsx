@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Star, Users, Plus, Github, History, Loader2, SlidersHorizontal, Heart, Info } from 'lucide-react';
 import Head from 'next/head';
 import { ThemeInfoModal } from '@/components/themes/ThemeInfoModal';
-import { ConnectGithubModal } from '@/components/github/ConnectGithubModal';
 import { themesApi } from '@/api/themes';
 import { Theme } from '@/types/api';
 import { toast } from 'sonner';
@@ -18,7 +17,6 @@ import { useRouter } from 'next/router';
 const ThemesPage = () => {
   const router = useRouter();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
@@ -330,13 +328,6 @@ const ThemesPage = () => {
             themeId={selectedThemeId}
           />
       )}
-
-      <ConnectGithubModal
-        open={isGithubModalOpen}
-        onOpenChange={setIsGithubModalOpen}
-        themeId={selectedThemeId}
-        onSuccess={fetchThemes}
-      />
     </div>
   );
 

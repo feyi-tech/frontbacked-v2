@@ -3,19 +3,26 @@
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 1926ms
- ○ Compiling /themes ...
+ ✓ Ready in 2.1s
+ ○ Compiling /login ...
 Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
- ✓ Compiled /themes in 9.1s (615 modules)
- ✓ Compiled in 539ms (615 modules)
- GET /themes 200 in 11250ms
- GET /themes 200 in 235ms
- ✓ Compiled in 711ms (615 modules)
- GET /themes 200 in 602ms
- ✓ Compiled in 390ms (447 modules)
- ✓ Compiled in 337ms (273 modules)
- ✓ Compiled in 399ms (273 modules)
- ✓ Compiled in 343ms (273 modules)
- ✓ Compiled in 312ms (273 modules)
+ ✓ Compiled /login in 8.8s (489 modules)
+ ✓ Compiled in 430ms (489 modules)
+ HEAD /login 200 in 10755ms
+ GET /login 200 in 231ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1145ms (577 modules)
+ GET /dashboard 200 in 1743ms
+ GET /login 200 in 253ms
+ GET /dashboard 200 in 219ms
+ ✓ Compiled /themes/create in 365ms (602 modules)
+ GET /themes/create 200 in 804ms
+ GET /login 200 in 254ms
+ GET /dashboard 200 in 234ms
+ GET /login 200 in 219ms
+ GET /dashboard 200 in 216ms
+ ✓ Compiled in 697ms (489 modules)
+ ✓ Compiled in 443ms (295 modules)
+ ✓ Compiled in 2.5s (295 modules)

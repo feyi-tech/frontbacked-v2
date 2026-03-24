@@ -114,26 +114,6 @@ const DashboardIndex = () => {
                         </Button>
                     </CardContent>
                 </Card>
-
-                <Card className="bg-card border-border shadow-elegant">
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <Github className="h-5 w-5" />
-                            Developer Studio
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Connect your GitHub account to sync and deploy custom themes.
-                        </p>
-                        <Button variant="outline" className="w-full" asChild>
-                            <Link href="/github">
-                                Connect GitHub
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
             </div>
         </div>
       </div>

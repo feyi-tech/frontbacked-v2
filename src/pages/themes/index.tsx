@@ -108,6 +108,7 @@ const ThemesPage = () => {
     // Basic currency inference
     if (typeof window !== 'undefined') {
         const locale = navigator.language;
+        console.log("Locale:", locale)
         if (locale.includes('NG')) setCurrency('NGN');
     }
   }, []);
@@ -129,18 +130,6 @@ const ThemesPage = () => {
             <p className="text-sm text-muted-foreground">
                 Showing prices in: <span className="font-bold">{user?.currency || currency}</span>
             </p>
-            {user && (
-                <div className="flex justify-center gap-4 pt-4">
-                    <Button variant="outline" onClick={() => { setSelectedThemeId(null); setIsGithubModalOpen(true); }}>
-                        <Github className="mr-2 h-4 w-4" />
-                        Connect Repo
-                    </Button>
-                    <Button onClick={() => router.push('/themes/create')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create Theme
-                    </Button>
-                </div>
-            )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -303,12 +292,6 @@ const ThemesPage = () => {
                                     Info
                                 </Button>
                             </div>
-                            {user && user.id === theme.creatorId && (
-                                <Button variant="secondary" className="w-full" onClick={() => router.push(`/themes/settings?id=${theme.id}`)}>
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Settings
-                                </Button>
-                            )}
                         </CardFooter>
                     </Card>
                     ))}

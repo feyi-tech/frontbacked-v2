@@ -2,9 +2,8 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Bell,
-  Search,
   User as UserIcon,
-  Plus
+  Globe, CodeXml
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Link from 'next/link';
 
 export const Topbar = () => {
   const { user, logout } = useAuth();
@@ -24,13 +24,6 @@ export const Topbar = () => {
   return (
     <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-20">
       <div className="flex items-center flex-1 max-w-md">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="pl-10 bg-surface border-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
       </div>
 
       <div className="flex items-center space-x-4">
@@ -65,9 +58,18 @@ export const Topbar = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button className="bg-primary text-primary-foreground">
-          <Plus className="mr-2 h-4 w-4" />
-          Create New
+        <Button className="bg-primary text-primary-foreground" asChild>
+          <Link href="/themes">
+            <Globe className="mr-2 h-4 w-4" />
+            Create Site
+          </Link>
+        </Button>
+
+        <Button className="bg-primary text-primary-foreground" asChild>
+          <Link href="/themes/create">
+            <CodeXml className="mr-2 h-4 w-4" />
+            Create Theme
+          </Link>
         </Button>
       </div>
     </header>

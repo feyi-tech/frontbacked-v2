@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Globe, Palette, Github, Activity, Plus, ArrowRight, Loader2 } from 'lucide-react';
 import Head from 'next/head';
 import { sitesApi } from '@/api/sites';
-import { themesApi } from '@/api/themes';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 const DashboardIndex = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState([
     { title: "Total Sites", value: "0", icon: Globe, color: "text-blue-500", href: "/sites" },
     { title: "Active Themes", value: "0", icon: Palette, color: "text-purple-500", href: "/themes" },
@@ -21,14 +22,11 @@ const DashboardIndex = () => {
   useEffect(() => {
     const fetchStats = async () => {
         try {
-            const [sites, themes] = await Promise.all([
-                sitesApi.list(),
-                themesApi.list()
-            ]);
+            const sites = await sitesApi.list();
             setStats(prev => [
                 { ...prev[0], value: sites.length.toString() },
-                { ...prev[1], value: themes.length.toString() },
-                { ...prev[2], value: "0" },
+                { ...prev[1], value: user?.totalThemes.toString() || "0" },
+                { ...prev[2], value: user?.totalRepos.toString() || "0" },
                 { ...prev[3], value: "0" },
             ]);
         } catch (error) {
@@ -38,7 +36,7 @@ const DashboardIndex = () => {
         }
     };
     fetchStats();
-  }, []);
+  }, [user]);
 
   return (
     <DashboardLayout>
@@ -52,9 +50,16 @@ const DashboardIndex = () => {
             <h1 className="text-3xl font-bold text-foreground">Overview</h1>
             <p className="text-muted-foreground">Everything looks good today.</p>
           </div>
-          <div className="text-sm text-muted-foreground bg-card border border-border px-3 py-1 rounded-full flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            API Connected
+          <div className="flex flex-col items-end gap-2">
+            {!user?.emailVerified && (
+              <div className="text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+                Email not verified
+              </div>
+            )}
+            <div className="text-sm text-muted-foreground bg-card border border-border px-3 py-1 rounded-full flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              API Connected
+            </div>
           </div>
         </div>
 

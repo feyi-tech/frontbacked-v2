@@ -1,9 +1,10 @@
-import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User } from "../types/api";
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { User, WSEvent } from "../types/api";
 import { authApi } from "../api/auth";
 import { useRouter } from "next/router";
 import { useToast } from '@/hooks/use-toast';
 import Swal from "sweetalert2";
+import { wsManager } from "../lib/websocket";
 
 interface AuthContextType {
   user: User | null;
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authApi.me()
         .then(res => {
           setUser(res.user);
+          wsManager.connect();
         })
         .catch(() => {
           localStorage.removeItem("auth_token");
@@ -40,7 +42,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setLoading(false);
     }
+
+    return () => {
+      wsManager.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const unsubscribeUserUpdated = wsManager.subscribe("user.updated", (event: WSEvent<User>) => {
+      setUser(event.data);
+    });
+
+    const unsubscribeSyncFailed = wsManager.subscribe("github.sync.failed", (event: WSEvent) => {
+      toast({
+        title: "GitHub Sync Failed",
+        description: "There was an error syncing your GitHub repositories. Please try again.",
+        variant: "destructive",
+      });
+    });
+
+    return () => {
+      unsubscribeUserUpdated();
+      unsubscribeSyncFailed();
+    };
+  }, [token, toast]);
 
   const login = async (credentials: any) => {
     setLoading(true);
@@ -49,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(res.token);
       setUser(res.user);
       localStorage.setItem("auth_token", res.token);
+      wsManager.connect();
       router.push("/dashboard");
     } finally {
       setLoading(false);
@@ -62,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(res.token);
       setUser(res.user);
       localStorage.setItem("auth_token", res.token);
+      wsManager.connect();
       router.push("/dashboard");
     } finally {
       setLoading(false);
@@ -69,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    wsManager.disconnect();
     setToken(null);
     setUser(null);
     localStorage.removeItem("auth_token");

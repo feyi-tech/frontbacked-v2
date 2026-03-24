@@ -39,7 +39,7 @@ export const ConnectGithubModal = ({ open, onOpenChange, themeId, onSuccess }: C
     setLoading(true);
     try {
       const data = await githubApi.listRepos(p);
-      setRepos(data);
+      setRepos(data.repos);
       setConnected(true);
     } catch (error: any) {
       // toast.error("Failed to fetch repos: " + error.message);

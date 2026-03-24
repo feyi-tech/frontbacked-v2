@@ -13,11 +13,10 @@ import { toast } from 'sonner';
 import { Github, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { Repo } from '@/types/api';
 import Head from 'next/head';
-import { useQueryError } from '@/compos/hooks/useQueryError';
-import useGithub from '@/compos/hooks/useGithub';
-import { getVisiblePages } from '@/compos/utils';
-
-// (imports unchanged)
+import { useQueryError } from '@/hooks/useQueryError';
+import useGithub from '@/hooks/useGithub';
+import { useAuth } from '@/hooks/useAuth';
+import { getVisiblePages } from '../../utils';
 
 const MAX_NAME = 80;
 const MAX_DESCRIPTION = 500;
@@ -26,6 +25,7 @@ const CreateThemePage = () => {
 
     useQueryError();
     const { connect } = useGithub();
+    const { user } = useAuth();
     const router = useRouter();
 
     const [step, setStep] = useState<'selection' | 'info'>('selection');
@@ -37,6 +37,9 @@ const CreateThemePage = () => {
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const syncStatus = user?.githubSyncStatus;
+    const isConnected = !!user?.githubInstallationId;
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,9 +57,11 @@ const CreateThemePage = () => {
     });
 
     useEffect(() => {
-        fetchRepos(page);
+        if (isConnected && syncStatus === 'completed') {
+            fetchRepos(page);
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [page]);
+    }, [page, isConnected, syncStatus]);
 
     const fetchRepos = async (pageNumber: number) => {
         setLoadingRepos(true);
@@ -203,102 +208,115 @@ const CreateThemePage = () => {
 
                             <TabsContent value="github" className="pt-4 space-y-4">
 
-                                {loadingRepos ? (
+                                {!isConnected ? (
+                                    <div className="text-center py-8 space-y-4">
+                                        <p className="text-muted-foreground">
+                                            GitHub not connected.
+                                        </p>
+                                        <Button variant="outline" onClick={connect}>
+                                            <Github className="mr-2 h-4 w-4" />
+                                            Connect GitHub
+                                        </Button>
+                                    </div>
+                                ) : syncStatus === 'syncing' ? (
+                                    <div className="text-center py-12 space-y-4">
+                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                                        <p className="text-muted-foreground">
+                                            Syncing your repositories...
+                                        </p>
+                                    </div>
+                                ) : syncStatus === 'failed' ? (
+                                    <div className="text-center py-8 space-y-4">
+                                        <AlertCircle className="h-8 w-8 mx-auto text-destructive" />
+                                        <p className="text-muted-foreground">
+                                            Failed to sync repositories.
+                                        </p>
+                                        <Button variant="outline" onClick={() => fetchRepos(1)}>
+                                            Retry Sync
+                                        </Button>
+                                    </div>
+                                ) : loadingRepos ? (
                                     <div className="flex justify-center py-8">
                                         <Loader2 className="animate-spin" />
                                     </div>
                                 ) : repos.length > 0 ? (
-
                                     <>
-                                    <div className="grid gap-2">
-
-                                        {repos.map(repo => (
-
-                                            <div
-                                                key={repo.id}
-                                                className={`p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
-                                                    selectedRepo?.id === repo.id
-                                                    ? "border-primary bg-primary/5"
-                                                    : "border-border"
-                                                }`}
-                                                onClick={() => setSelectedRepo(repo)}
-                                            >
-                                                <p className="font-medium">
-                                                    {repo.full_name}
-                                                </p>
-
-                                                <p className="text-xs text-muted-foreground">
-                                                    {repo.description}
-                                                </p>
-                                            </div>
-
-                                        ))}
-
-                                    </div>
-
-                                    {totalPages > 1 && (
-                                        <div className="flex justify-center gap-2 pt-4 flex-wrap">
-
-                                            <Button
-                                                variant="outline"
-                                                disabled={page === 1}
-                                                onClick={() => setPage(page - 1)}
-                                            >
-                                                Previous
-                                            </Button>
-
-                                            {getVisiblePages(page, totalPages).map((p, i) => {
-
-                                                if (p === "...") {
-                                                    return (
-                                                        <span
-                                                            key={i}
-                                                            className="px-2 text-muted-foreground flex items-center"
-                                                        >
-                                                            ...
-                                                        </span>
-                                                    );
-                                                }
-
-                                                return (
-                                                    <Button
-                                                        key={p}
-                                                        variant={p === page ? "default" : "outline"}
-                                                        onClick={() => setPage(p as number)}
-                                                    >
-                                                        {p}
-                                                    </Button>
-                                                );
-                                            })}
-
-                                            <Button
-                                                variant="outline"
-                                                disabled={page === totalPages}
-                                                onClick={() => setPage(page + 1)}
-                                            >
-                                                Next
-                                            </Button>
-
+                                        <div className="grid gap-2">
+                                            {repos.map(repo => (
+                                                <div
+                                                    key={repo.id}
+                                                    className={`p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
+                                                        selectedRepo?.id === repo.id
+                                                        ? "border-primary bg-primary/5"
+                                                        : "border-border"
+                                                    }`}
+                                                    onClick={() => setSelectedRepo(repo)}
+                                                >
+                                                    <p className="font-medium">
+                                                        {repo.full_name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {repo.description}
+                                                    </p>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
 
+                                        {totalPages > 1 && (
+                                            <div className="flex justify-center gap-2 pt-4 flex-wrap">
+
+                                                <Button
+                                                    variant="outline"
+                                                    disabled={page === 1}
+                                                    onClick={() => setPage(page - 1)}
+                                                >
+                                                    Previous
+                                                </Button>
+
+                                                {getVisiblePages(page, totalPages).map((p, i) => {
+
+                                                    if (p === "...") {
+                                                        return (
+                                                            <span
+                                                                key={i}
+                                                                className="px-2 text-muted-foreground flex items-center"
+                                                            >
+                                                                ...
+                                                            </span>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <Button
+                                                            key={p}
+                                                            variant={p === page ? "default" : "outline"}
+                                                            onClick={() => setPage(p as number)}
+                                                        >
+                                                            {p}
+                                                        </Button>
+                                                    );
+                                                })}
+
+                                                <Button
+                                                    variant="outline"
+                                                    disabled={page === totalPages}
+                                                    onClick={() => setPage(page + 1)}
+                                                >
+                                                    Next
+                                                </Button>
+
+                                            </div>
+                                        )}
                                     </>
-
                                 ) : (
-
                                     <div className="text-center py-8 space-y-4">
                                         <p className="text-muted-foreground">
-                                            No repositories found or GitHub not connected.
+                                            No repositories found.
                                         </p>
-
-                                        <Button
-                                            variant="outline"
-                                            onClick={connect}
-                                        >
-                                            Connect GitHub
+                                        <Button variant="outline" onClick={() => fetchRepos(1)}>
+                                            Refresh
                                         </Button>
                                     </div>
-
                                 )}
 
                             </TabsContent>

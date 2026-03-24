@@ -3,6 +3,12 @@ export interface User {
   email: string;
   name?: string;
   currency?: string;
+  emailVerified: boolean;
+  githubInstallationId: string | null;
+  githubInstallationStatus: 'pending' | 'completed' | 'failed' | null;
+  githubSyncStatus: 'none' | 'syncing' | 'completed' | 'failed' | null;
+  totalThemes: number;
+  totalRepos: number;
 }
 
 export interface AuthResponse {
@@ -65,4 +71,15 @@ export interface Repo {
   full_name: string;
   description: string;
   owner: { login: string };
+}
+
+export type WSEventType = 'user.updated' | 'github.sync.completed' | 'github.sync.failed';
+
+export interface WSEvent<T = any> {
+  type: WSEventType;
+  data: T;
+  meta: {
+    timestamp: number;
+    version: number;
+  };
 }

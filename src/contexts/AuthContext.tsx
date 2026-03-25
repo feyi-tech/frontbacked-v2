@@ -60,8 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("websocket => github.sync.completed", event)
       toast({
         title: "GitHub Sync Successful",
-        description: "There was an error syncing your GitHub repositories. Please try again.",
-        variant: "destructive",
+        description: "Your GitHub repositories have been successfully synced.",
       });
     });
 
@@ -69,15 +68,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("websocket => github.sync.failed", event)
       toast({
         title: "GitHub Sync Failed",
-        description: "There was an error syncing your GitHub repositories. Please try again.",
+        description: `There was an error syncing your GitHub repositories: ${event.data.error || 'Unknown error'}`,
         variant: "destructive",
       });
+    });
+
+    const unsubscribeAuthRevoked = wsManager.subscribe("auth.revoked", (event: WSEvent) => {
+      console.log("websocket => auth.revoked", event)
+      logout(true); // Sign out silently if revoked
     });
 
     return () => {
       unsubscribeUserUpdated();
       unsubscribeSyncOk();
       unsubscribeSyncFailed();
+      unsubscribeAuthRevoked();
     };
   }, [token, toast]);
 
@@ -109,12 +114,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    wsManager.disconnect();
+  const logout = (silent = false) => {
+    wsManager.signout();
     setToken(null);
     setUser(null);
     localStorage.removeItem("auth_token");
-    router.push("/login");
+    if (!silent) {
+        router.push("/login");
+    }
   };
 
   const logOutAlert = () => {
@@ -132,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           title: "Signed Out",
           description: "You have been successfully signed out",
         });
-      } 
+      }
     })
   }
 

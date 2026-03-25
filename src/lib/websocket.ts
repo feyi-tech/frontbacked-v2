@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from "../app-config";
 
 type MessageHandler = (data: any) => void;
@@ -11,6 +10,7 @@ class WebSocketManager {
   private maxReconnectAttempts = 10;
   private reconnectTimer: any = null;
   private manualClose = false;
+  private authenticated = false;
 
   private constructor() {}
 
@@ -23,6 +23,9 @@ class WebSocketManager {
 
   connect() {
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+      if (this.socket.readyState === WebSocket.OPEN && !this.authenticated) {
+        this.authenticate();
+      }
       return;
     }
 
@@ -30,19 +33,30 @@ class WebSocketManager {
     if (!token) return;
 
     this.manualClose = false;
-    const wsUrl = API_BASE_URL.replace(/^http/, "ws") + "/ws/me?token=" + token;
+    this.authenticated = false;
+    const wsUrl = API_BASE_URL.replace(/^http/, "ws") + "/ws";
 
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => {
       console.log("WebSocket connected");
       this.reconnectAttempts = 0;
+      this.authenticate();
     };
 
     this.socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
         const { type } = message;
+
+        if (type === "auth.success") {
+          this.authenticated = true;
+        }
+
+        if (type === "signout.success") {
+            this.authenticated = false;
+        }
+
         if (this.handlers.has(type)) {
           this.handlers.get(type)?.forEach((handler) => handler(message));
         }
@@ -51,8 +65,9 @@ class WebSocketManager {
       }
     };
 
-    this.socket.onclose = () => {
-      console.log("WebSocket closed");
+    this.socket.onclose = (event) => {
+      console.log("WebSocket closed", event.code, event.reason);
+      this.authenticated = false;
       if (!this.manualClose) {
         this.reconnect();
       }
@@ -61,6 +76,19 @@ class WebSocketManager {
     this.socket.onerror = (error) => {
       console.error("WebSocket error", error);
     };
+  }
+
+  private authenticate() {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (token && this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ type: "auth", token }));
+    }
+  }
+
+  signout() {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN && this.authenticated) {
+      this.socket.send(JSON.stringify({ type: "signout" }));
+    }
   }
 
   private reconnect() {
@@ -101,6 +129,7 @@ class WebSocketManager {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+    this.authenticated = false;
   }
 }
 

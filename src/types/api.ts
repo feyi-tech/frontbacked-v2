@@ -66,11 +66,15 @@ export interface Domain {
 }
 
 export interface Repo {
-  id: number;
-  name: string;
-  full_name: string;
-  description: string;
-  owner: { login: string };
+  githubRepoId: string;
+  fullName: string;
+  installationId: string;
+  ownerLogin: string;
+  defaultBranch: string;
+  lastActivityAt: string | null;
+  isSelected: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type WSEventType = 'user.updated' | 'github.sync.completed' | 'github.sync.failed';

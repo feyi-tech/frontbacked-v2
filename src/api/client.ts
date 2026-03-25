@@ -1,5 +1,4 @@
 import { API_BASE_URL } from "../app-config";
-import { toast } from "../hooks/use-toast";
 
 class ApiClient {
   private get token(): string | null {

@@ -24,6 +24,8 @@ const GithubCallback = () => {
       .catch((err) => {
         router.push(`/themes/create?error=${"GitHub connection failed: " + err.message}`);
       });
+    } else if(setup_action !== "install") {
+      router.push(`/themes/create`);
     }
   }, [installation_id, setup_action, state, router]);
 

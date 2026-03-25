@@ -52,10 +52,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return;
 
     const unsubscribeUserUpdated = wsManager.subscribe("user.updated", (event: WSEvent<User>) => {
+      console.log("websocket => user.updated", event)
       setUser(event.data);
     });
 
+    const unsubscribeSyncOk = wsManager.subscribe("github.sync.completed", (event: WSEvent) => {
+      console.log("websocket => github.sync.completed", event)
+      toast({
+        title: "GitHub Sync Successful",
+        description: "There was an error syncing your GitHub repositories. Please try again.",
+        variant: "destructive",
+      });
+    });
+
     const unsubscribeSyncFailed = wsManager.subscribe("github.sync.failed", (event: WSEvent) => {
+      console.log("websocket => github.sync.failed", event)
       toast({
         title: "GitHub Sync Failed",
         description: "There was an error syncing your GitHub repositories. Please try again.",
@@ -65,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       unsubscribeUserUpdated();
+      unsubscribeSyncOk();
       unsubscribeSyncFailed();
     };
   }, [token, toast]);

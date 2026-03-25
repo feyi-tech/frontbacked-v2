@@ -6,13 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Star, Users, Plus, Github, History, Loader2, SlidersHorizontal, Heart, Info } from 'lucide-react';
-import Head from 'next/head';
 import { ThemeInfoModal } from '@/components/themes/ThemeInfoModal';
 import { themesApi } from '@/api/themes';
 import { Theme } from '@/types/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/router';
+import Navigation from '@/compos/components/Navigation';
+import Meta from '@/compos/components/Meta';
+import Footer from '@/compos/components/Footer';
+import PageContainer from '@/compos/components/PageContainer';
 
 const ThemesPage = () => {
   const router = useRouter();
@@ -113,12 +116,9 @@ const ThemesPage = () => {
 
   const { user, loading: authLoading } = useAuth();
 
+  // <div className="space-y-8">
   const content = (
     <div className="space-y-8">
-      <Head>
-        <title>Themes | FrontBacked</title>
-      </Head>
-
         <div className="bg-card border border-border rounded-xl p-8 mb-4 text-center space-y-4">
             <h1 className="text-4xl font-bold text-foreground">Theme Marketplace</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -340,15 +340,23 @@ const ThemesPage = () => {
   }
 
   if (user) {
-    return <DashboardLayout>{content}</DashboardLayout>;
+    return (
+        <>
+            <Meta />
+            <DashboardLayout>
+                {content}
+            </DashboardLayout>
+        </>
+    );
   }
-
+  
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto py-8 px-4">
-        {content}
-      </main>
-    </div>
+    <>
+        <Meta />
+        <PageContainer>
+            {content}
+        </PageContainer>
+    </>
   );
 };
 

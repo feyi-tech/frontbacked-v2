@@ -57,9 +57,10 @@ const CreateThemePage = () => {
     });
 
     useEffect(() => {
-        if (isConnected && syncStatus === 'completed') {
+        if (isConnected && ['completed', 'none'].includes(syncStatus || '')) {
             fetchRepos(page);
         }
+        console.log("websocket.user", user, isConnected, syncStatus)
         window.scrollTo({ top: 0, behavior: "smooth" });
     }, [page, isConnected, syncStatus]);
 
@@ -151,7 +152,7 @@ const CreateThemePage = () => {
             }
 
             toast.success("Theme created successfully!");
-            router.push('/themes');
+            //router.push('/themes');
 
         } catch (error: any) {
 

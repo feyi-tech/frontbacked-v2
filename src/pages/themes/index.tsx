@@ -62,11 +62,6 @@ const ThemesPage = () => {
         setTotalPages(response.totalPages || 1);
     } catch (error: any) {
         // toast.error("Failed to load themes");
-        // Fallback mock for demo if API is not yet available
-        setThemes([
-            { id: "1", name: "Modern Business", description: "Clean and professional design", visibility: "public", creatorId: "1", createdAt: new Date().toISOString(), likes: 0, usageCount: 0, price: 0 },
-            { id: "2", name: "Personal Blog", description: "A simple blog theme", visibility: "public", creatorId: "1", createdAt: new Date().toISOString(), likes: 0, usageCount: 0, price: 0 }
-        ]);
     } finally {
         setLoading(false);
     }

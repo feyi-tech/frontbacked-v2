@@ -70,15 +70,15 @@ export const ThemeInfoModal = ({ open, onOpenChange, themeId }: ThemeInfoModalPr
 
                 <div>
                   <h4 className="font-semibold text-sm uppercase text-muted-foreground mb-2">Creator</h4>
-                  <Link href={`/profile?id=${theme.creatorId}`} className="flex items-center space-x-3 group">
+                  <Link href={`/profile?id=${theme.author?.id}`} className="flex items-center space-x-3 group">
                     <Avatar className="h-10 w-10 border border-border group-hover:border-primary transition-colors">
-                      <AvatarImage src={theme.creator?.photo} />
+                      <AvatarImage src={theme.author?.photo} />
                       <AvatarFallback>
                         <UserIcon className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium group-hover:text-primary transition-colors">{theme.creator?.name || 'Anonymous'}</p>
+                      <p className="font-medium group-hover:text-primary transition-colors">{theme.author?.name || 'Anonymous'}</p>
                       <p className="text-xs text-muted-foreground">View Profile</p>
                     </div>
                   </Link>

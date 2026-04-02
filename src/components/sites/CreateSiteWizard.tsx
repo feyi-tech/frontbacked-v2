@@ -33,10 +33,6 @@ export const CreateSiteWizard = ({ open, onOpenChange, onSuccess }: CreateSiteWi
   useEffect(() => {
     if (open) {
       themesApi.list().then(setThemes).catch(() => {
-          setThemes([
-              { id: "1", name: "Modern Business", description: "Professional layout", visibility: "public", creatorId: "1", createdAt: "" },
-              { id: "2", name: "Personal Blog", description: "Clean writing space", visibility: "public", creatorId: "1", createdAt: "" }
-          ]);
       });
     }
   }, [open]);

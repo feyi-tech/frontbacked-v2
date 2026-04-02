@@ -21,13 +21,15 @@ export interface Theme {
   name: string;
   description: string;
   visibility: "public" | "private";
-  creatorId: string;
+  ownerId: string;
   createdAt: string;
   likes?: number;
   usageCount?: number;
   price?: number;
-  creator?: {
+  author?: {
+    id: string;
     name: string;
+    username: string;
     photo?: string;
   };
   category?: string;

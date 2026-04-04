@@ -39,7 +39,7 @@ const Footer = () => {
             <h3 className="font-semibold text-foreground mb-4">Platform</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/sites/create" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/themes" className="text-muted-foreground hover:text-primary transition-colors">
                   Generate Website
                 </Link>
               </li>

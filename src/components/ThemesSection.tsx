@@ -1,81 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, Users, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Users, ArrowRight, Loader2, Palette } from 'lucide-react';
 import Link from 'next/link';
+import { themesApi } from '@/api/themes';
+import { Theme } from '@/types/api';
 
 const ThemesSection = () => {
-  const [hoveredTheme, setHoveredTheme] = useState<number | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
-
-  const themes = [
-    {
-      id: 1,
-      name: "Modern Business",
-      description: "Clean and professional design perfect for corporate websites",
-      users: 1234,
-      rating: 4.8,
-      images: [
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop"
-      ]
-    },
-    {
-      id: 2,
-      name: "Creative Portfolio",
-      description: "Artistic and dynamic layout for creatives and designers",
-      users: 856,
-      rating: 4.9,
-      images: [
-        "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=400&h=300&fit=crop"
-      ]
-    },
-    {
-      id: 3,
-      name: "E-commerce Pro",
-      description: "Optimized for online stores with built-in payment integration",
-      users: 2103,
-      rating: 4.7,
-      images: [
-        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1556742400-b5392798c4f4?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1556742111-a301076d9d18?w=400&h=300&fit=crop"
-      ]
-    },
-    {
-      id: 4,
-      name: "Restaurant Delux",
-      description: "Appetizing design for restaurants and food businesses",
-      users: 674,
-      rating: 4.6,
-      images: [
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=400&h=300&fit=crop"
-      ]
-    }
-  ];
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (hoveredTheme !== null) {
-      interval = setInterval(() => {
-        setCurrentImageIndex(prev => ({
-          ...prev,
-          [hoveredTheme]: ((prev[hoveredTheme] || 0) + 1) % themes[hoveredTheme - 1].images.length
-        }));
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
+    const fetchThemes = async () => {
+      try {
+        const response = await themesApi.list({ limit: 6 });
+        const themeList = response.themes || response;
+        setThemes(Array.isArray(themeList) ? themeList.slice(0, 6) : []);
+      } catch (error) {
+        console.error("Failed to fetch themes", error);
+      } finally {
+        setLoading(false);
       }
     };
-  }, [hoveredTheme, themes]);
+    fetchThemes();
+  }, []);
 
   return (
     <section className="py-20 bg-surface">
@@ -92,61 +39,44 @@ const ThemesSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {themes.map((theme) => (
-            <div
-              key={theme.id}
-              className="group bg-gradient-card border border-border rounded-xl overflow-hidden shadow-elegant hover:shadow-glow transition-all duration-300 cursor-pointer"
-              onMouseEnter={() => {
-                setHoveredTheme(theme.id);
-                setCurrentImageIndex(prev => ({ ...prev, [theme.id]: 0 }));
-              }}
-              onMouseLeave={() => setHoveredTheme(null)}
-            >
-              <div className="aspect-video overflow-hidden relative">
-                <img
-                  src={theme.images[currentImageIndex[theme.id] || 0]}
-                  alt={theme.name}
-                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                />
-                {hoveredTheme === theme.id && theme.images.length > 1 && (
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                    {theme.images.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          index === (currentImageIndex[theme.id] || 0)
-                            ? 'bg-primary'
-                            : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-6">
-                <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {theme.name}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {theme.description}
-                </p>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {themes.map((theme) => (
+              <Link
+                key={theme.id}
+                href={`/theme/details?id=${theme.id}`}
+                className="group bg-gradient-card border border-border rounded-xl overflow-hidden shadow-elegant hover:shadow-glow transition-all duration-300 cursor-pointer"
+              >
+                <div className="aspect-video overflow-hidden relative bg-surface flex items-center justify-center">
+                  <Palette className="h-12 w-12 text-muted-foreground/20" />
+                </div>
                 
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-foreground font-medium">{theme.rating}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{theme.users.toLocaleString()}</span>
+                <div className="p-6">
+                  <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                    {theme.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {theme.description}
+                  </p>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-1 text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      <span>{theme.usageCount || 0}</span>
+                    </div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-primary">
+                      {theme.price === 0 || theme.price === undefined ? 'Free' : `$${theme.price}`}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <div className="text-center">
           <Button variant="outline" size="lg" asChild>

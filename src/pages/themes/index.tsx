@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Star, Users, Plus, Github, History, Loader2, SlidersHorizontal, Heart, Info } from 'lucide-react';
-import { ThemeInfoModal } from '@/components/themes/ThemeInfoModal';
+import { Search, Users, SlidersHorizontal, Heart, Loader2 } from 'lucide-react';
 import { themesApi } from '@/api/themes';
 import { Theme } from '@/types/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/router';
-import Navigation from '@/compos/components/Navigation';
 import Meta from '@/compos/components/Meta';
-import Footer from '@/compos/components/Footer';
 import PageContainer from '@/compos/components/PageContainer';
+import Link from 'next/link';
 
 const ThemesPage = () => {
   const router = useRouter();
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -99,17 +95,14 @@ const ThemesPage = () => {
   };
 
   useEffect(() => {
-    // Basic currency inference
     if (typeof window !== 'undefined') {
         const locale = navigator.language;
-        console.log("Locale:", locale)
         if (locale.includes('NG')) setCurrency('NGN');
     }
   }, []);
 
   const { user, loading: authLoading } = useAuth();
 
-  // <div className="space-y-8">
   const content = (
     <div className="space-y-8">
         <div className="bg-card border border-border rounded-xl p-8 mb-4 text-center space-y-4">
@@ -236,44 +229,37 @@ const ThemesPage = () => {
                 ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {themes.map((theme) => (
-                    <Card key={theme.id} className="overflow-hidden group hover:shadow-glow transition-all duration-300">
-                        <div className="aspect-video relative overflow-hidden bg-surface flex items-center justify-center">
-                            <PaletteIcon className="h-12 w-12 text-muted-foreground/20" />
-                        </div>
-                        <CardHeader>
-                            <CardTitle className="flex justify-between items-start">
-                                <span className="truncate mr-2">{theme.name}</span>
-                                <span className="text-xs font-normal bg-primary/10 text-primary px-2 py-1 rounded">
-                                    {theme.visibility}
-                                </span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground line-clamp-2">{theme.description}</p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                <div className="flex items-center space-x-1">
-                                    <Heart className="h-3 w-3 text-red-500 fill-current" />
-                                    <span>{theme.likes || 0}</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                    <Users className="h-3 w-3" />
-                                    <span>{theme.usageCount || 0}</span>
-                                </div>
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                                    {theme.price === 0 || theme.price === undefined ? 'Free' : `$${theme.price}`}
-                                </div>
+                    <Link key={theme.id} href={`/theme/details?id=${theme.id}`}>
+                        <Card className="overflow-hidden group hover:shadow-glow transition-all duration-300 h-full">
+                            <div className="aspect-video relative overflow-hidden bg-surface flex items-center justify-center">
+                                <PaletteIcon className="h-12 w-12 text-muted-foreground/20" />
                             </div>
-                        </CardContent>
-                        <CardFooter className="flex flex-col gap-2">
-                            <div className="flex w-full gap-2">
-                                <Button className="flex-1">Create Site</Button>
-                                <Button variant="outline" className="flex-1" onClick={() => { setSelectedThemeId(theme.id); setIsInfoModalOpen(true); }}>
-                                    <Info className="mr-2 h-4 w-4" />
-                                    Info
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
+                            <CardHeader>
+                                <CardTitle className="flex justify-between items-start">
+                                    <span className="truncate mr-2">{theme.name}</span>
+                                    <span className="text-xs font-normal bg-primary/10 text-primary px-2 py-1 rounded">
+                                        {theme.visibility}
+                                    </span>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-muted-foreground line-clamp-2">{theme.description}</p>
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <div className="flex items-center space-x-1">
+                                        <Heart className="h-3 w-3 text-red-500 fill-current" />
+                                        <span>{theme.likes || 0}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                        <Users className="h-3 w-3" />
+                                        <span>{theme.usageCount || 0}</span>
+                                    </div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                                        {theme.price === 0 || theme.price === undefined ? 'Free' : `$${theme.price}`}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
                     ))}
                 </div>
                 )}
@@ -301,15 +287,6 @@ const ThemesPage = () => {
                 )}
             </div>
         </div>
-
-
-      {selectedThemeId && (
-          <ThemeInfoModal
-            open={isInfoModalOpen}
-            onOpenChange={setIsInfoModalOpen}
-            themeId={selectedThemeId}
-          />
-      )}
     </div>
   );
 

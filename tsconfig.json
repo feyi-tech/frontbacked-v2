@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -14,18 +18,42 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/compos/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/assets/*": ["./src/assets/*"],
-      "@/api/*": ["./src/api/*"],
-      "@/types/*": ["./src/types/*"],
-      "@/contexts/*": ["./src/contexts/*"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/compos/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/assets/*": [
+        "./src/assets/*"
+      ],
+      "@/api/*": [
+        "./src/api/*"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
+      "@/contexts/*": [
+        "./src/contexts/*"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ]
     },
-    "baseUrl": ".",
+    "baseUrl": "."
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

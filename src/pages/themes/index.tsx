@@ -28,7 +28,6 @@ const ThemesPage = () => {
   const [currency, setCurrency] = useState('USD');
 
   const [search, setSearch] = useState('');
-  const [searchMode, setSearchMode] = useState<'name' | 'tag' | 'creator'>('name');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
@@ -50,7 +49,6 @@ const ThemesPage = () => {
         const params: any = {
             page: pageNumber,
             search,
-            searchMode,
             minPrice,
             maxPrice,
             category: selectedCategory !== 'all' ? selectedCategory : undefined,
@@ -72,7 +70,7 @@ const ThemesPage = () => {
         fetchThemes(1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [search, searchMode, minPrice, maxPrice, selectedCategory, selectedSubcategory, filters]);
+  }, [search, minPrice, maxPrice, selectedCategory, selectedSubcategory, filters]);
 
   useEffect(() => {
     fetchThemes(page);
@@ -128,22 +126,11 @@ const ThemesPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1 space-y-6">
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Search className="h-4 w-4" /> Search
-                    </h3>
-                    <div className="space-y-2">
-                        <Select value={searchMode} onValueChange={(v: any) => setSearchMode(v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Search by..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="name">Search by Name</SelectItem>
-                                <SelectItem value="tag">Search by Tag</SelectItem>
-                                <SelectItem value="creator">Search by Creator</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder={`Search themes by ${searchMode}...`}
+                            className="pl-10"
+                            placeholder={`Search themes...`}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />

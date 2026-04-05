@@ -59,8 +59,8 @@ const EditSitePage = () => {
             setTotalVersionPages(versionsResponse.totalPages);
 
             try {
-                const d = await apiClient.get<Domain[]>(`/sites/${site_id}/domains`);
-                setDomains(d);
+                const d = await sitesApi.getDomains(site_id as string, 1, 10);
+                setDomains(d.domains);
             } catch (e) {
                 setDomains([]);
             }

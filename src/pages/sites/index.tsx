@@ -91,11 +91,11 @@ const SitesPage = () => {
                                     <p className="text-sm text-muted-foreground">{site.subdomain}.{getSubDomainHost()}</p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="icon" onClick={() => window.open(`https://${site.subdomain}.${getSubDomainHost()}`, '_blank')}>
+                                    <Button variant="outline" size="icon" onClick={() => window.open(`${window.location.protocol}//${site.subdomain}.${getSubDomainHost()}`, '_blank')}>
                                         <ExternalLink className="h-4 w-4" />
                                     </Button>
                                     <Button variant="outline" size="icon" asChild>
-                                        <Link href={`/site/edit?site_id=${site.id}`}>
+                                        <Link href={`/sites/edit?site_id=${site.id}`}>
                                             <Pencil className="h-4 w-4" />
                                         </Link>
                                     </Button>
@@ -129,7 +129,7 @@ const SitesPage = () => {
                             <CardFooter className="bg-surface/50 border-t border-border flex justify-between py-3">
                                 <span className="text-xs text-muted-foreground">Status: <span className="text-green-500 font-medium">Live</span></span>
                                 <Button variant="link" size="sm" className="h-auto p-0 text-primary" asChild>
-                                    <Link href={`/site/edit?site_id=${site.id}`}>Settings & Domains</Link>
+                                    <Link href={`/sites/edit?site_id=${site.id}`}>Settings & Domains</Link>
                                 </Button>
                             </CardFooter>
                         </Card>

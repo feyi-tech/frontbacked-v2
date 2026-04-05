@@ -14,4 +14,6 @@ export const sitesApi = {
     apiClient.get(`/sites/${siteId}/theme-subscription`),
   updateSubscription: (siteId: string, data: any) =>
     apiClient.post(`/sites/${siteId}/theme-subscription`, data),
+  removeDomain: (siteId: string, domainId: string) =>
+    apiClient.post(`/sites/${siteId}/remove-domain`, { domainId }),
 };

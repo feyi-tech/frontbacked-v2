@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Globe, CheckCircle2, XCircle, Copy, Info, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Globe, CheckCircle2, XCircle, Copy, Info, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import Head from 'next/head';
 import { AddDomainModal } from '@/components/domains/AddDomainModal';
 import { domainsApi } from '@/api/domains';
+import { sitesApi } from '@/api/sites';
 import { Domain, Site } from '@/types/api';
 import { toast } from 'sonner';
+import { Pagination } from '@/compos/components/Pagination';
 
 const DomainsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,43 +18,60 @@ const DomainsPage = () => {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchData = async () => {
+  const fetchSites = async () => {
+      try {
+          const sitesData = await sitesApi.list(1, 100);
+          setSites(sitesData.sites);
+      } catch (error) {
+          console.error("Failed to fetch sites", error);
+      }
+  }
+
+  const fetchDomains = async () => {
     setLoading(true);
     try {
-        const sitesData = await domainsApi.list();
-        setSites(sitesData.domains);
-        // Assuming we can fetch all domains or per site
-        // For simplicity, let's assume there's a list domains endpoint or we fetch per site
-        const allDomains: Domain[] = [];
-        for (const site of sitesData.sites) {
-            // This is a placeholder as the exact API for listing all domains isn't in Step 8
-            // but we can infer it or fetch per site.
-        }
-        setDomains(allDomains);
+        const domainsData = await domainsApi.list(page);
+        setDomains(domainsData.domains);
+        setTotalPages(domainsData.totalPages);
     } catch (error) {
-        // demo data
-        setSites([]);
-        setDomains([{ id: "d1", siteId: "1", hostname: "myshop.com", verified: false, verificationToken: "fb-verify-12345" }]);
+        setDomains([]);
+        setTotalPages(1);
     } finally {
         setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchSites();
   }, []);
+
+  useEffect(() => {
+    fetchDomains();
+  }, [page]);
 
   const handleVerify = async (id: string) => {
     setVerifying(id);
     try {
         await domainsApi.verify(id);
         toast.success("Domain verified successfully!");
-        fetchData();
+        fetchDomains();
     } catch (error: any) {
         toast.error("Verification failed: " + error.message);
     } finally {
         setVerifying(null);
+    }
+  };
+
+  const handleRemove = async (siteId: string, domainId: string) => {
+    try {
+        await sitesApi.removeDomain(siteId, domainId);
+        toast.success("Domain removed successfully!");
+        fetchDomains();
+    } catch (error: any) {
+        toast.error("Failed to remove domain: " + error.message);
     }
   };
 
@@ -117,10 +136,13 @@ const DomainsPage = () => {
                                             <CheckCircle2 className="h-3 w-3 mr-1" /> Verified
                                         </span>
                                     ) : (
-                                        <span className="flex items-center text-xs font-medium text-amber-500 bg-amber-50 px-2 py-1 rounded">
+                                        <span className="flex items-center text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded">
                                             <XCircle className="h-3 w-3 mr-1" /> Pending Verification
                                         </span>
                                     )}
+                                    <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => handleRemove(domain.siteId, domain.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -165,6 +187,11 @@ const DomainsPage = () => {
                         </div>
                     </Card>
                 ))}
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
             </div>
         )}
 
@@ -201,7 +228,7 @@ const DomainsPage = () => {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         siteId={sites[0]?.id || ""}
-        onSuccess={fetchData}
+        onSuccess={fetchDomains}
       />
     </DashboardLayout>
   );

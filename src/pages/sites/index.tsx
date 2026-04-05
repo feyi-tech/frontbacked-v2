@@ -99,9 +99,6 @@ const SitesPage = () => {
                                             <Pencil className="h-4 w-4" />
                                         </Link>
                                     </Button>
-                                    <Button variant="outline" size="icon" onClick={() => { setSelectedSiteId(site.id); setIsSubscriptionOpen(true); }}>
-                                        <Settings className="h-4 w-4" />
-                                    </Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">

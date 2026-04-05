@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import Meta from '@/compos/components/Meta';
 import { cn } from '@/lib/utils';
+import { Pagination } from '@/compos/components/Pagination';
 
 const EditSitePage = () => {
     const router = useRouter();
@@ -34,6 +35,8 @@ const EditSitePage = () => {
     const [site, setSite] = useState<Site | null>(null);
     const [theme, setTheme] = useState<Theme | null>(null);
     const [versions, setVersions] = useState<ThemeVersion[]>([]);
+    const [versionPage, setVersionPage] = useState(1);
+    const [totalVersionPages, setTotalVersionPages] = useState(1);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingVersion, setUpdatingVersion] = useState(false);
@@ -47,12 +50,13 @@ const EditSitePage = () => {
             const siteData = await sitesApi.get(site_id as string);
             setSite(siteData);
 
-            const [themeData, versionsData] = await Promise.all([
+            const [themeData, versionsResponse] = await Promise.all([
                 themesApi.get(siteData.themeId),
-                themesApi.getVersions(siteData.themeId)
+                themesApi.getVersions(siteData.themeId, versionPage)
             ]);
             setTheme(themeData);
-            setVersions(versionsData);
+            setVersions(versionsResponse.versions);
+            setTotalVersionPages(versionsResponse.totalPages);
 
             try {
                 const d = await apiClient.get<Domain[]>(`/sites/${site_id}/domains`);
@@ -68,9 +72,24 @@ const EditSitePage = () => {
         }
     };
 
+    const fetchVersions = async () => {
+        if (!site) return;
+        try {
+            const versionsResponse = await themesApi.getVersions(site.themeId, versionPage);
+            setVersions(versionsResponse.versions);
+            setTotalVersionPages(versionsResponse.totalPages);
+        } catch (error: any) {
+            toast.error("Failed to load versions");
+        }
+    };
+
     useEffect(() => {
         if (site_id) fetchData();
     }, [site_id]);
+
+    useEffect(() => {
+        if (site) fetchVersions();
+    }, [versionPage]);
 
     const handleUpdateVersion = async (versionId: string) => {
         if (!site || updatingVersion) return;
@@ -299,6 +318,11 @@ const EditSitePage = () => {
                                             </div>
                                         ))}
                                     </div>
+                                    <Pagination
+                                        page={versionPage}
+                                        totalPages={totalVersionPages}
+                                        onPageChange={setVersionPage}
+                                    />
                                 </CardContent>
                             </Card>
                         </TabsContent>

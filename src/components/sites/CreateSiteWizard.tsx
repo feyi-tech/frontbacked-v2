@@ -32,7 +32,7 @@ export const CreateSiteWizard = ({ open, onOpenChange, onSuccess }: CreateSiteWi
 
   useEffect(() => {
     if (open) {
-      themesApi.list().then(setThemes).catch(() =>  
+      themesApi.list({ limit: 10 }).then(res => setThemes(res.themes)).catch(() =>
         {
       });
     }

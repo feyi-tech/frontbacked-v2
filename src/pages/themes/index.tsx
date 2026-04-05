@@ -14,6 +14,7 @@ import { useRouter } from 'next/router';
 import Meta from '@/compos/components/Meta';
 import PageContainer from '@/compos/components/PageContainer';
 import Link from 'next/link';
+import { Pagination } from '@/compos/components/Pagination';
 
 const ThemesPage = () => {
   const router = useRouter();
@@ -52,8 +53,8 @@ const ThemesPage = () => {
             ...filters
         };
         const response = await themesApi.list(params);
-        setThemes(response.themes || response);
-        setTotalPages(response.totalPages || 1);
+        setThemes(response.themes);
+        setTotalPages(response.totalPages);
     } catch (error: any) {
         // toast.error("Failed to load themes");
     } finally {
@@ -63,6 +64,7 @@ const ThemesPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+        setPage(1);
         fetchThemes(1);
     }, 500);
     return () => clearTimeout(timer);
@@ -221,7 +223,7 @@ const ThemesPage = () => {
                 </div>
             </div>
 
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 space-y-8">
                 {loading ? (
                 <div className="flex justify-center py-20">
                     <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -264,27 +266,11 @@ const ThemesPage = () => {
                 </div>
                 )}
 
-                {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 mt-8">
-                        <Button
-                            variant="outline"
-                            disabled={page === 1}
-                            onClick={() => setPage(p => p - 1)}
-                        >
-                            Previous
-                        </Button>
-                        <div className="flex items-center px-4 font-medium">
-                            Page {page} of {totalPages}
-                        </div>
-                        <Button
-                            variant="outline"
-                            disabled={page === totalPages}
-                            onClick={() => setPage(p => p + 1)}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                )}
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     </div>

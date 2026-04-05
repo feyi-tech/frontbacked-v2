@@ -22,9 +22,9 @@ const DashboardIndex = () => {
   useEffect(() => {
     const fetchStats = async () => {
         try {
-            const sites = await sitesApi.list();
+            const sitesData = await sitesApi.list();
             setStats(prev => [
-                { ...prev[0], value: sites.length.toString() },
+                { ...prev[0], value: sitesData.totalCount.toString() },
                 { ...prev[1], value: user?.totalThemes.toString() || "0" },
                 { ...prev[2], value: user?.totalRepos.toString() || "0" },
                 { ...prev[3], value: "0" },

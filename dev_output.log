@@ -1,0 +1,16 @@
+   ▲ Next.js 15.5.0
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.8s
+ ○ Compiling /domains ...
+ ✓ Compiled /domains in 10.1s (592 modules)
+ ✓ Compiled in 469ms (592 modules)
+ GET /domains 200 in 12175ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 3s (611 modules)
+ GET /domains 200 in 604ms
+ ○ Compiling /sites ...
+ ✓ Compiled /sites in 584ms (633 modules)
+ GET /sites 200 in 998ms

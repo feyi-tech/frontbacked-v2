@@ -19,7 +19,6 @@ import {
   Plus,
   CheckCircle2,
   XCircle,
-  Info,
   BarChart3,
   Trash2
 } from 'lucide-react';
@@ -27,6 +26,7 @@ import Meta from '@/compos/components/Meta';
 import { cn } from '@/lib/utils';
 import { Pagination } from '@/compos/components/Pagination';
 import { SubscriptionModal } from '@/components/sites/SubscriptionModal';
+import { DNSConfig } from '@/components/domains/DNSConfig';
 
 const EditSitePage = () => {
     const router = useRouter();
@@ -50,6 +50,7 @@ const EditSitePage = () => {
     const [addingDomain, setAddingDomain] = useState(false);
     const [activeTab, setActiveTab] = useState('metrics');
     const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
+    const [verifying, setVerifying] = useState<string | null>(null);
 
     const fetchSiteAndTheme = async () => {
         if (!site_id) return;
@@ -152,12 +153,15 @@ const EditSitePage = () => {
     }
 
     const handleVerify = async (id: string) => {
+        setVerifying(id);
         try {
             await domainsApi.verify(id);
             toast.success("Domain verified!");
             fetchDomains();
         } catch (error: any) {
-            toast.error("Verification failed: " + error.message);
+            toast.error("Verification failed: " + (error.message || "Please check your DNS records and try again."));
+        } finally {
+            setVerifying(null);
         }
     };
 
@@ -299,29 +303,11 @@ const EditSitePage = () => {
                                                         </div>
 
                                                         {!domain.verified && (
-                                                            <div className="bg-surface p-4 rounded-lg space-y-4 text-sm border border-border/40">
-                                                                <div className="flex items-center gap-2 text-primary font-semibold">
-                                                                    <Info className="h-4 w-4" /> DNS Configuration
-                                                                </div>
-                                                                <p className="text-muted-foreground">Add the following TXT record to your DNS settings:</p>
-                                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                                                                    <div>
-                                                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase font-bold">Type</p>
-                                                                        <div className="bg-background border rounded p-2">TXT</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase font-bold">Host</p>
-                                                                        <div className="bg-background border rounded p-2">@</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase font-bold">Value</p>
-                                                                        <div className="bg-background border rounded p-2 truncate">{domain.verificationToken}</div>
-                                                                    </div>
-                                                                </div>
-                                                                <Button size="sm" variant="outline" onClick={() => handleVerify(domain.id)} className="w-full">
-                                                                    Verify Connection
-                                                                </Button>
-                                                            </div>
+                                                            <DNSConfig
+                                                                domain={domain}
+                                                                onVerify={handleVerify}
+                                                                isVerifying={verifying === domain.id}
+                                                            />
                                                         )}
                                                     </div>
                                                 ))

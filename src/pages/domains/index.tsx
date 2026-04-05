@@ -7,7 +7,6 @@ import { Plus, Globe, CheckCircle2, XCircle, Copy, Info, Loader2, RefreshCw } fr
 import Head from 'next/head';
 import { AddDomainModal } from '@/components/domains/AddDomainModal';
 import { domainsApi } from '@/api/domains';
-import { sitesApi } from '@/api/sites';
 import { Domain, Site } from '@/types/api';
 import { toast } from 'sonner';
 
@@ -21,8 +20,8 @@ const DomainsPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-        const sitesData = await sitesApi.list();
-        setSites(sitesData.sites);
+        const sitesData = await domainsApi.list();
+        setSites(sitesData.domains);
         // Assuming we can fetch all domains or per site
         // For simplicity, let's assume there's a list domains endpoint or we fetch per site
         const allDomains: Domain[] = [];

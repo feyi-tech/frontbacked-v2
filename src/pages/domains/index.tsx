@@ -22,18 +22,18 @@ const DomainsPage = () => {
     setLoading(true);
     try {
         const sitesData = await sitesApi.list();
-        setSites(sitesData);
+        setSites(sitesData.sites);
         // Assuming we can fetch all domains or per site
         // For simplicity, let's assume there's a list domains endpoint or we fetch per site
         const allDomains: Domain[] = [];
-        for (const site of sitesData) {
+        for (const site of sitesData.sites) {
             // This is a placeholder as the exact API for listing all domains isn't in Step 8
             // but we can infer it or fetch per site.
         }
         setDomains(allDomains);
     } catch (error) {
         // demo data
-        setSites([{ id: "1", name: "My Shop", subdomain: "myshop", themeId: "1", themeVersionId: "1", ownerId: "1", createdAt: "" }]);
+        setSites([]);
         setDomains([{ id: "d1", siteId: "1", hostname: "myshop.com", verified: false, verificationToken: "fb-verify-12345" }]);
     } finally {
         setLoading(false);

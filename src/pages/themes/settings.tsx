@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Github, Upload, Loader2, Globe, FileText, Settings, History, Plus, Trash2 } from 'lucide-react';
 import { Theme, Repo } from '@/types/api';
 import Head from 'next/head';
+import { Pagination } from '@/compos/components/Pagination';
 
 const ThemeSettingsPage = () => {
     const router = useRouter();
@@ -25,6 +26,8 @@ const ThemeSettingsPage = () => {
     // Tab states
     const [repos, setRepos] = useState<Repo[]>([]);
     const [repoHistory, setRepoHistory] = useState<any[]>([]);
+    const [historyPage, setHistoryPage] = useState(1);
+    const [totalHistoryPages, setTotalHistoryPages] = useState(1);
     const [customDomains, setCustomDomains] = useState<any[]>([]);
     const [newDomain, setNewDomain] = useState('');
     const [categories, setCategories] = useState<any[]>([]);
@@ -46,16 +49,28 @@ const ThemeSettingsPage = () => {
                 const subs = await themesApi.getSubcategories(data.category);
                 setSubcategories(subs);
             }
-            // Fetch history and domains
-            const history = await themesApi.getRepoHistory(id as string);
-            setRepoHistory(history);
-            // Assuming domains are part of theme or separate call
+            fetchHistory();
         } catch (error) {
             toast.error("Failed to fetch theme");
         } finally {
             setLoading(false);
         }
     };
+
+    const fetchHistory = async () => {
+        if (!id) return;
+        try {
+            const historyResponse = await themesApi.getRepoHistory(id as string, historyPage);
+            setRepoHistory(historyResponse.history);
+            setTotalHistoryPages(historyResponse.totalPages);
+        } catch (error) {
+            console.error("Failed to fetch history", error);
+        }
+    };
+
+    useEffect(() => {
+        if (id) fetchHistory();
+    }, [historyPage]);
 
     const handleUpdateSettings = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -234,7 +249,7 @@ const ThemeSettingsPage = () => {
                                     <CardTitle>Pull History</CardTitle>
                                     <CardDescription>History of repository syncs.</CardDescription>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="space-y-6">
                                     <div className="space-y-4">
                                         {repoHistory.map(entry => (
                                             <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -254,6 +269,11 @@ const ThemeSettingsPage = () => {
                                         ))}
                                         {repoHistory.length === 0 && <p className="text-center text-muted-foreground py-4">No sync history available.</p>}
                                     </div>
+                                    <Pagination
+                                        page={historyPage}
+                                        totalPages={totalHistoryPages}
+                                        onPageChange={setHistoryPage}
+                                    />
                                 </CardContent>
                             </Card>
                         </div>

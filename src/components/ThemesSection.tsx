@@ -13,7 +13,7 @@ const ThemesSection = () => {
     const fetchThemes = async () => {
       try {
         const response = await themesApi.list({ limit: 6 });
-        const themeList = response.themes || response;
+        const themeList = response.themes;
         setThemes(Array.isArray(themeList) ? themeList.slice(0, 6) : []);
       } catch (error) {
         console.error("Failed to fetch themes", error);

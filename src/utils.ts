@@ -40,3 +40,37 @@ export function getVisiblePages(current: number, total: number) {
 
     return rangeWithDots;
 }
+
+export const copyToClipboard = (text: string): Promise<void> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Modern API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return resolve();
+      }
+
+      // Fallback
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      if (!successful) {
+        return reject(new Error("Fallback copy failed"));
+      }
+
+      resolve();
+    } catch (err) {
+      reject(err instanceof Error ? err : new Error("Copy failed"));
+    }
+  });
+};

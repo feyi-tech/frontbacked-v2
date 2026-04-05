@@ -49,13 +49,23 @@ export interface ThemeVersion {
   createdAt: string;
 }
 
+export interface SiteSettings {
+  name: string;
+  description?: string;
+  [x: string]: any
+}
+
+
 export interface Site {
   id: string;
   name: string;
+  description?: string;
   subdomain: string;
   themeId: string;
+  themePlan: 'free' | 'monthly' | 'quarterly' | 'yearly' | 'purchased';
   themeVersionId: string;
   ownerId: string;
+  settings: SiteSettings;
   createdAt: string;
 }
 

@@ -11,12 +11,14 @@ import { toast } from 'sonner';
 import { Loader2, Globe, Palette, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Theme } from '@/types/api';
 import Meta from '@/compos/components/Meta';
+import { getSubDomainHost } from '@/compos/app-config';
 
 const CreateSitePage = () => {
     const router = useRouter();
     const { theme_id } = router.query;
     const [theme, setTheme] = useState<Theme | null>(null);
-    const [siteName, setSiteName] = useState('');
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
     const [subdomain, setSubdomain] = useState('');
     const [loading, setLoading] = useState(false);
     const [fetchingTheme, setFetchingTheme] = useState(true);
@@ -43,12 +45,16 @@ const CreateSitePage = () => {
         setLoading(true);
         try {
             await sitesApi.create({
-                name: siteName,
                 subdomain,
                 themeId: theme.id,
+                themePlan: "free",
+                settings: {
+                    name,
+                    description,
+                },
             });
             toast.success("Site launched successfully!");
-            router.push('/sites');
+            //router.push('/sites');
         } catch (error: any) {
             toast.error("Launch failed: " + error.message);
         } finally {
@@ -92,19 +98,33 @@ const CreateSitePage = () => {
                             </CardHeader>
                             <CardContent className="space-y-6 pt-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="siteName">Site Name</Label>
+                                    <Label htmlFor="name">Site Name</Label>
                                     <Input
-                                        id="siteName"
+                                        id="name"
                                         required
-                                        value={siteName}
+                                        value={name}
                                         onChange={(e) => {
-                                            setSiteName(e.target.value);
-                                            if (!subdomain) setSubdomain(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+                                            setName(e.target.value);
+                                        }}
+                                        onBlur={() => {
+                                            if (!subdomain && name) setSubdomain(name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '').toLowerCase());
                                         }}
                                         placeholder="My Awesome Site"
                                         className="h-12"
                                     />
-                                    <p className="text-xs text-muted-foreground">This is the internal name for your site.</p>
+                                    <p className="text-xs text-muted-foreground">This is the name that will appear on your site.</p>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Site Description</Label>
+                                    <Input
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Describe your site..."
+                                        className="h-12"
+                                    />
+                                    <p className="text-xs text-muted-foreground">This is a brief description of your site.</p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -137,17 +157,17 @@ const CreateSitePage = () => {
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Site Name</span>
-                                            <span className="font-medium">{siteName || "---"}</span>
+                                            <span className="font-medium">{name || "---"}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Address</span>
-                                            <span className="font-medium text-primary">{subdomain ? `${subdomain}.frontbacked.com` : "---"}</span>
+                                            <span className="font-medium text-primary">{subdomain ? `${subdomain}.${getSubDomainHost()}` : "---"}</span>
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
                             <CardFooter className="border-t border-border/40 bg-surface/30 p-6">
-                                <Button type="submit" className="w-full h-12 text-lg font-bold shadow-glow" disabled={loading || !siteName || !subdomain}>
+                                <Button type="submit" className="w-full h-12 text-lg font-bold shadow-glow" disabled={loading || !name || !subdomain}>
                                     {loading ? (
                                         <>
                                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />

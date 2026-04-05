@@ -5,3 +5,11 @@ export const APP_DESCRIPTION = "Frontbacked lets anyone generate professional we
 export const API_BASE_URL = "http://api.frontbacked.v2:8787";
 export const GITHUB_CLIENT_ID = "Ov23liFmwvQxakODFgJc"
 export const GITHUB_APP_NAME = "frontbacked-dev"
+
+export const getSubDomainHost = () => {
+    if (process.env.NODE_ENV === "production") {
+        return "frontbacked.com";
+    } else {
+        return "frontbacked.v2:8787";
+    }
+}

@@ -17,6 +17,7 @@ import useGithub from '@/hooks/useGithub';
 import { useAuth } from '@/hooks/useAuth';
 import { getVisiblePages } from '../../utils';
 import Meta from '@/compos/components/Meta';
+import { Pagination } from '@/compos/components/Pagination';
 
 const MAX_NAME = 80;
 const MAX_DESCRIPTION = 500;
@@ -257,7 +258,13 @@ const CreateThemePage = () => {
                                                     ))}
                                                 </div>
 
-                                                {totalPages > 1 && (
+                                                <Pagination
+                                                    page={page}
+                                                    totalPages={totalPages}
+                                                    onPageChange={setPage}
+                                                />
+
+                                                {/*totalPages > 1 && (
                                                     <div className="flex justify-center gap-2 pt-4 flex-wrap">
 
                                                         <Button
@@ -301,7 +308,7 @@ const CreateThemePage = () => {
                                                         </Button>
 
                                                     </div>
-                                                )}
+                                                )*/}
                                             </>
                                         ) : (
                                             <div className="text-center py-8 space-y-4">

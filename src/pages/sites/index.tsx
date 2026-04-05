@@ -9,32 +9,39 @@ import { Site } from '@/types/api';
 import { SubscriptionModal } from '@/components/sites/SubscriptionModal';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { getSubDomainHost } from '@/compos/app-config';
+import { Pagination } from '@/compos/components/Pagination';
+import { useCopy } from '@/compos/hooks/use-copy';
 
 const SitesPage = () => {
   const [sites, setSites] = useState<Site[]>([]);
+    const { copy } = useCopy({
+        successMessage: "Link copied!",
+        errorMessage: "Couldn't copy link",
+    });
+  
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
 
-  const fetchSites = async () => {
+  const fetchSites = async (pageNumber: number) => {
     setLoading(true);
     try {
-        const data = await sitesApi.list();
-        setSites(data);
+        const data = await sitesApi.list(pageNumber);
+        setSites(data.sites);
+        setTotalPages(data.totalPages);
     } catch (error: any) {
+        toast.error(error.message);
     } finally {
         setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSites();
-  }, []);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard!");
-  };
+    fetchSites(page);
+  }, [page]);
 
   return (
     <DashboardLayout>
@@ -74,59 +81,66 @@ const SitesPage = () => {
                 </Button>
             </div>
         ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {sites.map(site => (
-                    <Card key={site.id} className="bg-card border-border shadow-elegant overflow-hidden">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle className="text-xl">{site.name}</CardTitle>
-                                <p className="text-sm text-muted-foreground">{site.subdomain}.frontbacked.com</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="icon" onClick={() => window.open(`https://${site.subdomain}.frontbacked.com`, '_blank')}>
-                                    <ExternalLink className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="icon" asChild>
-                                    <Link href={`/site/edit?site_id=${site.id}`}>
-                                        <Pencil className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <Button variant="outline" size="icon" onClick={() => { setSelectedSiteId(site.id); setIsSubscriptionOpen(true); }}>
-                                    <Settings className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-surface p-4 rounded-lg">
-                                    <p className="text-xs text-muted-foreground mb-1">Your Website Link</p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium truncate mr-2">{site.subdomain}.frontbacked.com</span>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(`https://${site.subdomain}.frontbacked.com`)}>
-                                            <Copy className="h-3 w-3" />
-                                        </Button>
+            <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {sites.map(site => (
+                        <Card key={site.id} className="bg-card border-border shadow-elegant overflow-hidden">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle className="text-xl">{site.name}</CardTitle>
+                                    <p className="text-sm text-muted-foreground">{site.subdomain}.{getSubDomainHost()}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="icon" onClick={() => window.open(`https://${site.subdomain}.${getSubDomainHost()}`, '_blank')}>
+                                        <ExternalLink className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="outline" size="icon" asChild>
+                                        <Link href={`/site/edit?site_id=${site.id}`}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={() => { setSelectedSiteId(site.id); setIsSubscriptionOpen(true); }}>
+                                        <Settings className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-surface p-4 rounded-lg">
+                                        <p className="text-xs text-muted-foreground mb-1">Your Website Link</p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium truncate mr-2">{site.subdomain}.{getSubDomainHost()}</span>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(`${window.location.protocol}//${site.subdomain}.${getSubDomainHost()}`)}>
+                                                <Copy className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-surface p-4 rounded-lg">
+                                        <p className="text-xs text-muted-foreground mb-1">Admin Dashboard</p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium truncate mr-2">.../fb-admin</span>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(`${window.location.protocol}//${site.subdomain}.${getSubDomainHost()}/fb-admin`)}>
+                                                <Copy className="h-3 w-3" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="bg-surface p-4 rounded-lg">
-                                    <p className="text-xs text-muted-foreground mb-1">Admin Dashboard</p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium truncate mr-2">.../fb-admin</span>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(`https://${site.subdomain}.frontbacked.com/fb-admin`)}>
-                                            <Copy className="h-3 w-3" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="bg-surface/50 border-t border-border flex justify-between py-3">
-                            <span className="text-xs text-muted-foreground">Status: <span className="text-green-500 font-medium">Live</span></span>
-                            <Button variant="link" size="sm" className="h-auto p-0 text-primary" asChild>
-                                <Link href={`/site/edit?site_id=${site.id}`}>Settings & Domains</Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
+                            </CardContent>
+                            <CardFooter className="bg-surface/50 border-t border-border flex justify-between py-3">
+                                <span className="text-xs text-muted-foreground">Status: <span className="text-green-500 font-medium">Live</span></span>
+                                <Button variant="link" size="sm" className="h-auto p-0 text-primary" asChild>
+                                    <Link href={`/site/edit?site_id=${site.id}`}>Settings & Domains</Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
+            </>
         )}
       </div>
 

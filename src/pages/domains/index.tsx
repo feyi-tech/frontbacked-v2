@@ -3,17 +3,16 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Globe, CheckCircle2, XCircle, Copy, Info, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { Globe, CheckCircle2, XCircle, Info, Loader2, Trash2 } from 'lucide-react';
 import Head from 'next/head';
-import { AddDomainModal } from '@/components/domains/AddDomainModal';
 import { domainsApi } from '@/api/domains';
 import { sitesApi } from '@/api/sites';
 import { Domain, Site } from '@/types/api';
 import { toast } from 'sonner';
 import { Pagination } from '@/compos/components/Pagination';
+import { DNSConfig } from '@/components/domains/DNSConfig';
 
 const DomainsPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [sites, setSites] = useState<Site[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +58,7 @@ const DomainsPage = () => {
         toast.success("Domain verified successfully!");
         fetchDomains();
     } catch (error: any) {
-        toast.error("Verification failed: " + error.message);
+        toast.error("Verification failed: " + (error.message || "Please check your DNS records and try again."));
     } finally {
         setVerifying(null);
     }
@@ -75,11 +74,6 @@ const DomainsPage = () => {
     }
   };
 
-  const copy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
-  };
-
   return (
     <DashboardLayout>
       <Head>
@@ -92,10 +86,6 @@ const DomainsPage = () => {
                 <h1 className="text-3xl font-bold text-foreground">Custom Domains</h1>
                 <p className="text-muted-foreground">Manage and verify custom domains for your websites.</p>
             </div>
-            <Button onClick={() => setIsModalOpen(true)} disabled={sites.length === 0}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Domain
-            </Button>
         </div>
 
         {loading ? (
@@ -109,11 +99,11 @@ const DomainsPage = () => {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground mb-4">
-                        Your site is already live with a free FrontBacked link.
-                        Want a custom domain like <strong>yourbrand.com</strong>? Add it here.
+                        Your sites are already live with free FrontBacked links.
+                        To add a custom domain, visit the settings for a specific site.
                     </p>
-                    <Button variant="outline" onClick={() => setIsModalOpen(true)} disabled={sites.length === 0}>
-                        Add Your First Domain
+                    <Button variant="outline" asChild>
+                      <a href="/sites">Go to Sites</a>
                     </Button>
                 </CardContent>
             </Card>
@@ -132,7 +122,7 @@ const DomainsPage = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {domain.verified ? (
-                                        <span className="flex items-center text-xs font-medium text-green-500 bg-green-50 px-2 py-1 rounded">
+                                        <span className="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded">
                                             <CheckCircle2 className="h-3 w-3 mr-1" /> Verified
                                         </span>
                                     ) : (
@@ -147,42 +137,11 @@ const DomainsPage = () => {
                             </div>
 
                             {!domain.verified && (
-                                <div className="space-y-4">
-                                    <div className="bg-surface p-4 rounded-lg space-y-4">
-                                        <h4 className="text-sm font-semibold flex items-center">
-                                            <Info className="h-4 w-4 mr-2 text-primary" />
-                                            DNS Configuration
-                                        </h4>
-                                        <p className="text-xs text-muted-foreground">Add the following TXT record to your domain's DNS settings at your registrar.</p>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] uppercase font-bold text-muted-foreground">Type</p>
-                                                <code className="text-xs bg-background p-1 px-2 rounded border border-border block">TXT</code>
-                                            </div>
-                                            <div className="space-y-1 md:col-span-1">
-                                                <p className="text-[10px] uppercase font-bold text-muted-foreground">Name/Host</p>
-                                                <div className="flex items-center justify-between bg-background p-1 px-2 rounded border border-border">
-                                                    <code className="text-xs">@</code>
-                                                    <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => copy("@")}><Copy className="h-2 w-2" /></Button>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1 md:col-span-1">
-                                                <p className="text-[10px] uppercase font-bold text-muted-foreground">Value</p>
-                                                <div className="flex items-center justify-between bg-background p-1 px-2 rounded border border-border">
-                                                    <code className="text-xs truncate">{domain.verificationToken}</code>
-                                                    <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => copy(domain.verificationToken)}><Copy className="h-2 w-2" /></Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Button onClick={() => handleVerify(domain.id)} disabled={verifying === domain.id}>
-                                            {verifying === domain.id ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                            Verify Connection
-                                        </Button>
-                                    </div>
-                                </div>
+                                <DNSConfig
+                                    domain={domain}
+                                    onVerify={handleVerify}
+                                    isVerifying={verifying === domain.id}
+                                />
                             )}
                         </div>
                     </Card>
@@ -196,7 +155,10 @@ const DomainsPage = () => {
         )}
 
         <div className="max-w-3xl">
-            <h2 className="text-xl font-bold mb-4">Domain Education</h2>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Info className="h-5 w-5 text-primary" />
+                Domain Education
+            </h2>
             <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                     <AccordionTrigger>What is a domain name?</AccordionTrigger>
@@ -214,22 +176,15 @@ const DomainsPage = () => {
                 <AccordionItem value="item-3">
                     <AccordionTrigger>How do I connect my domain?</AccordionTrigger>
                     <AccordionContent>
-                        1. Add your domain in the dashboard.<br/>
+                        1. Add your domain in the site's settings tab.<br/>
                         2. Copy the DNS TXT record provided.<br/>
                         3. Go to your registrar and add the record.<br/>
-                        4. Come back here and click "Verify Connection".
+                        4. Come back here or to the site's settings and click "Verify Connection".
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
         </div>
       </div>
-
-      <AddDomainModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        siteId={sites[0]?.id || ""}
-        onSuccess={fetchDomains}
-      />
     </DashboardLayout>
   );
 };

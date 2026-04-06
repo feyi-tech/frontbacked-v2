@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Domain } from '@/types/api';
 import { detectDNSProvider, DNSProviderInfo } from '@/lib/dns';
 import { cn } from '@/lib/utils';
+import { useCopy } from '@/compos/hooks/use-copy';
 
 interface DNSConfigProps {
   domain: Domain;
@@ -17,6 +18,17 @@ export const DNSConfig = ({ domain, onVerify, isVerifying, className }: DNSConfi
   const [provider, setProvider] = useState<DNSProviderInfo | null>(null);
   const [detecting, setDetecting] = useState(false);
 
+  
+  const linkCopy = useCopy({
+      successMessage: "Link copied!",
+      errorMessage: "Couldn't copy link",
+  });
+
+  const dnsCopy = useCopy({
+      successMessage: "DNS text copied!",
+      errorMessage: "Couldn't copy DNS text",
+  });
+
   useEffect(() => {
     if (!domain.verified) {
       setDetecting(true);
@@ -25,11 +37,6 @@ export const DNSConfig = ({ domain, onVerify, isVerifying, className }: DNSConfi
         .finally(() => setDetecting(false));
     }
   }, [domain.hostname, domain.verified]);
-
-  const copy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
-  };
 
   const handleAutoAdd = () => {
     if (provider) {
@@ -64,7 +71,7 @@ export const DNSConfig = ({ domain, onVerify, isVerifying, className }: DNSConfi
           <p className="text-[10px] uppercase font-bold text-muted-foreground">Type</p>
           <div className="flex items-center justify-between bg-background p-1.5 px-2 rounded border border-border group">
             <code className="text-xs">TXT</code>
-            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copy("TXT")}>
+            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => dnsCopy.copy("TXT")}>
               <Copy className="h-3 w-3" />
             </Button>
           </div>
@@ -72,8 +79,8 @@ export const DNSConfig = ({ domain, onVerify, isVerifying, className }: DNSConfi
         <div className="space-y-1">
           <p className="text-[10px] uppercase font-bold text-muted-foreground">Host</p>
           <div className="flex items-center justify-between bg-background p-1.5 px-2 rounded border border-border group">
-            <code className="text-xs">@</code>
-            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copy("@")}>
+            <code className="text-xs truncate">{domain.verificationToken.split(':')[0]}</code>
+            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => dnsCopy.copy(domain.verificationToken.split(':')[0])}>
               <Copy className="h-3 w-3" />
             </Button>
           </div>
@@ -81,8 +88,8 @@ export const DNSConfig = ({ domain, onVerify, isVerifying, className }: DNSConfi
         <div className="space-y-1">
           <p className="text-[10px] uppercase font-bold text-muted-foreground">Value</p>
           <div className="flex items-center justify-between bg-background p-1.5 px-2 rounded border border-border group overflow-hidden">
-            <code className="text-xs truncate">{domain.verificationToken}</code>
-            <Button variant="ghost" size="icon" className="h-5 w-5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copy(domain.verificationToken)}>
+            <code className="text-xs truncate">{domain.verificationToken.split(':')[1]}</code>
+            <Button variant="ghost" size="icon" className="h-5 w-5 flex-shrink-0" onClick={() => dnsCopy.copy(domain.verificationToken.split(':')[1])}>
               <Copy className="h-3 w-3" />
             </Button>
           </div>

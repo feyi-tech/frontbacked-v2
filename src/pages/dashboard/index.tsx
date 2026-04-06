@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { authApi } from '@/compos/api/auth';
 
 const DashboardIndex = () => {
   const { user } = useAuth();
@@ -22,11 +23,11 @@ const DashboardIndex = () => {
   useEffect(() => {
     const fetchStats = async () => {
         try {
-            const sitesData = await sitesApi.list();
+            const userInfo = await authApi.me();
             setStats(prev => [
-                { ...prev[0], value: sitesData.totalCount.toString() },
-                { ...prev[1], value: user?.totalThemes.toString() || "0" },
-                { ...prev[2], value: user?.totalRepos.toString() || "0" },
+                { ...prev[0], value: userInfo.user.totalSites.toString() || "0" },
+                { ...prev[1], value: userInfo.user.totalThemes.toString() || "0" },
+                { ...prev[2], value: userInfo.user.totalRepos.toString() || "0" },
                 { ...prev[3], value: "0" },
             ]);
         } catch (error) {

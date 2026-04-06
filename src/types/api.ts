@@ -45,6 +45,7 @@ export interface Theme {
 export interface ThemeVersion {
   id: string;
   themeId: string;
+  commitSha: string;
   version: string;
   createdAt: string;
 }
@@ -63,6 +64,7 @@ export interface Site {
   subdomain: string;
   themeId: string;
   themePlan: 'free' | 'monthly' | 'quarterly' | 'yearly' | 'purchased';
+  themeCommitSha: string;
   themeVersionId: string;
   ownerId: string;
   settings: SiteSettings;

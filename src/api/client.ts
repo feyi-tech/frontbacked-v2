@@ -27,6 +27,12 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      if(response.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth_token");
+          window.location.href = "/login"
+        }
+      }
       throw new Error(errorData.error || errorData.message || `Request failed with status ${response.status}`);
     }
 

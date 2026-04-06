@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "devc": "npm run open && node server.js",
-    "dev": "npm run open && next dev -p 3000",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "build-eb": "next build && next export -o build",
     "build-e": "next build && mv build/.git build-git/ && next export -o build && mv build-git/ build/.git",

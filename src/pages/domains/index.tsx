@@ -64,9 +64,9 @@ const DomainsPage = () => {
     }
   };
 
-  const handleRemove = async (siteId: string, domainId: string) => {
+  const handleRemove = async (domainId: string) => {
     try {
-        await sitesApi.removeDomain(siteId, domainId);
+        await domainsApi.remove(domainId);
         toast.success("Domain removed successfully!");
         fetchDomains();
     } catch (error: any) {
@@ -130,7 +130,7 @@ const DomainsPage = () => {
                                             <XCircle className="h-3 w-3 mr-1" /> Pending Verification
                                         </span>
                                     )}
-                                    <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => handleRemove(domain.siteId, domain.id)}>
+                                    <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => handleRemove(domain.id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>

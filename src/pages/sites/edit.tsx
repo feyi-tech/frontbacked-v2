@@ -111,13 +111,13 @@ const EditSitePage = () => {
         }
     }, [activeTab, site_id, domainPage]);
 
-    const handleUpdateVersion = async (versionId: string) => {
+    const handleUpdateVersion = async (commitSha: string) => {
         if (!site || updatingVersion) return;
         setUpdatingVersion(true);
         try {
-            await sitesApi.updateVersion(site.id, versionId);
+            await sitesApi.updateVersion(site.id, commitSha);
             toast.success("Theme version updated!");
-            setSite({ ...site, themeVersionId: versionId });
+            setSite({ ...site, themeCommitSha: commitSha });
         } catch (error: any) {
             toast.error("Update failed: " + error.message);
         } finally {
@@ -142,9 +142,8 @@ const EditSitePage = () => {
     };
 
     const handleRemoveDomain = async (domainId: string) => {
-        if (!site_id) return;
         try {
-            await sitesApi.removeDomain(site_id as string, domainId);
+            await domainsApi.remove(domainId);
             toast.success("Domain removed!");
             fetchDomains();
         } catch (error: any) {
@@ -350,23 +349,23 @@ const EditSitePage = () => {
                                                         key={v.id}
                                                         className={cn(
                                                             "p-4 border rounded-xl flex items-center justify-between transition-all",
-                                                            site.themeVersionId === v.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-surface/50"
+                                                            site.themeCommitSha === v.commitSha ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-surface/50"
                                                         )}
                                                     >
                                                         <div>
                                                             <p className="font-bold flex items-center gap-2">
                                                                 Version {v.version}
-                                                                {site.themeVersionId === v.id && <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase tracking-tighter">Current</span>}
+                                                                {site.themeCommitSha === v.commitSha && <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase tracking-tighter">Current</span>}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">Released on {new Date(v.createdAt).toLocaleDateString()}</p>
                                                         </div>
                                                         <Button
                                                             size="sm"
-                                                            variant={site.themeVersionId === v.id ? "ghost" : "outline"}
-                                                            disabled={site.themeVersionId === v.id || updatingVersion}
-                                                            onClick={() => handleUpdateVersion(v.id)}
+                                                            variant={site.themeCommitSha === v.commitSha ? "ghost" : "outline"}
+                                                            disabled={site.themeCommitSha === v.commitSha || updatingVersion}
+                                                            onClick={() => handleUpdateVersion(v.commitSha)}
                                                         >
-                                                            {updatingVersion && site.themeVersionId !== v.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Switch to Version"}
+                                                            {updatingVersion && site.themeCommitSha !== v.commitSha ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Switch to Version"}
                                                         </Button>
                                                     </div>
                                                 ))}

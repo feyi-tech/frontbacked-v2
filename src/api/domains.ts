@@ -8,4 +8,6 @@ export const domainsApi = {
     apiClient.post<Domain>(`/sites/${siteId}/add-domain`, { hostname }),
   verify: (domainId: string) =>
     apiClient.post(`/domains/${domainId}/verify`),
+  remove: (domainId: string) =>
+    apiClient.post(`/domains/${domainId}/remove`),
 };

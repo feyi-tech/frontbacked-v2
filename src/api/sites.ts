@@ -8,12 +8,10 @@ export const sitesApi = {
     apiClient.get<{domains: Domain[], totalPages: number, limit: number, page: number, totalCount: number}>(`/sites/${id}/domains?page=${page}&per_page=${per_page}`),
   get: (id: string) => apiClient.get<Site>(`/sites/${id}`),
   create: (data: any) => apiClient.post<Site>("/sites/create", data),
-  updateVersion: (siteId: string, versionId: string) =>
-    apiClient.post(`/sites/${siteId}/theme-version`, { versionId }),
+  updateVersion: (siteId: string, commitSha: string) =>
+    apiClient.post(`/sites/${siteId}/theme-version`, { commitSha }),
   getSubscription: (siteId: string) =>
     apiClient.get(`/sites/${siteId}/theme-subscription`),
   updateSubscription: (siteId: string, data: any) =>
-    apiClient.post(`/sites/${siteId}/theme-subscription`, data),
-  removeDomain: (siteId: string, domainId: string) =>
-    apiClient.post(`/sites/${siteId}/remove-domain`, { domainId }),
+    apiClient.post(`/sites/${siteId}/theme-subscription`, data)
 };

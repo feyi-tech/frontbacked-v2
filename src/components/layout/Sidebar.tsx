@@ -8,7 +8,11 @@ import {
   Settings,
   LogOut,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  Wallet,
+  FileText,
+  CreditCard,
+  UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -20,6 +24,10 @@ const sidebarItems = [
   { icon: Palette, label: 'Themes', href: '/themes' },
   { icon: Globe, label: 'Sites', href: '/sites' },
   { icon: Settings, label: 'Domains', href: '/domains' },
+  { icon: Wallet, label: 'Wallet', href: '/wallet' },
+  { icon: FileText, label: 'Transactions', href: '/transactions' },
+  { icon: CreditCard, label: 'Payment Methods', href: '/payment-methods' },
+  { icon: UserCheck, label: 'KYC', href: '/kyc' },
 ];
 
 export const Sidebar = ({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed: (v: boolean) => void }) => {

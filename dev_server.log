@@ -1,0 +1,20 @@
+
+> frontbacked-v2@0.1.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.0
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 1820ms
+ ○ Compiling /pay ...
+ ✓ Compiled /pay in 10.2s (579 modules)
+ ✓ Compiled in 481ms (579 modules)
+ GET /pay 200 in 12210ms
+ ✓ Compiled in 1890ms (371 modules)
+ ✓ Compiled in 608ms (371 modules)
+ ✓ Compiled in 392ms (371 modules)
+ ✓ Compiled in 440ms (371 modules)
+ ✓ Compiled in 517ms (371 modules)
+ ✓ Compiled in 1663ms (579 modules)

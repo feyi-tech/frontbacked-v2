@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import PageContainer from '@/components/PageContainer';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { paymentsApi } from '@/api/payments';
 import { KYCStatusValue } from '@/types/payments';
 import { KYCFormStepper } from '@/components/payments/KYCFormStepper';
 import { ShieldCheck, Info, Loader2, Sparkles, UserCheck, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { cn } from "@/lib/utils";
+import Meta from '@/components/Meta';
 
 const KYCPage = () => {
   const [status, setStatus] = useState<KYCStatusValue>('none');
@@ -49,8 +49,9 @@ const KYCPage = () => {
   };
 
   return (
-    <PageContainer>
-      <div className="max-w-4xl mx-auto space-y-12 pb-20 px-4">
+    <DashboardLayout>
+      <Meta title="Identity Verification" description="Help us keep your account secure and comply with regulations." />
+      <div className="max-w-6xl mx-auto space-y-12 pb-20 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-extrabold tracking-tight">Identity Verification</h1>
@@ -126,7 +127,7 @@ const KYCPage = () => {
           </div>
         )}
       </div>
-    </PageContainer>
+    </DashboardLayout>
   );
 };
 

@@ -1,0 +1,121 @@
+import React, { useEffect, useState } from 'react';
+import { PaymentField } from '@/types/payments';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiClient } from '@/api/client';
+import { Loader2 } from 'lucide-react';
+
+interface DynamicPaymentFieldsProps {
+  fields: PaymentField[];
+  onChange: (name: string, value: any) => void;
+  values: Record<string, any>;
+}
+
+export const DynamicPaymentFields: React.FC<DynamicPaymentFieldsProps> = ({ fields, onChange, values }) => {
+  return (
+    <div className="space-y-4">
+      {fields.map((field) => (
+        <div key={field.name} className="space-y-2">
+          <Label htmlFor={field.name}>{field.label}</Label>
+          <RenderField field={field} onChange={onChange} value={values[field.name]} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
+  switch (field.type) {
+    case 'text':
+    case 'password':
+      return (
+        <Input
+          id={field.name}
+          type={field.type}
+          placeholder={field.placeholder}
+          required={field.required}
+          value={value || ''}
+          onChange={(e) => onChange(field.name, e.target.value)}
+        />
+      );
+    case 'select':
+      return <SelectField field={field} onChange={onChange} value={value} />;
+    case 'info':
+      return (
+        <div className="p-3 bg-muted rounded-md text-sm font-medium flex justify-between items-center">
+            <span className="text-muted-foreground">{field.label}:</span>
+            <span>{field.value}</span>
+        </div>
+      );
+    case 'countdown':
+      return <CountdownField field={field} />;
+    default:
+      return null;
+  }
+};
+
+const SelectField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
+  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (field.itemsUrl) {
+      setLoading(true);
+      apiClient.get<any[]>(field.itemsUrl)
+        .then((res) => {
+          // Assuming the API returns a list of items, we might need to map them if they aren't {label, value}
+          setItems(res.map(item => typeof item === 'string' ? { label: item, value: item } : item));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [field.itemsUrl]);
+
+  return (
+    <Select value={value} onValueChange={(val) => onChange(field.name, val)} required={field.required}>
+      <SelectTrigger id={field.name}>
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SelectValue placeholder={field.placeholder || "Select option"} />}
+      </SelectTrigger>
+      <SelectContent>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const CountdownField: React.FC<{ field: PaymentField }> = ({ field }) => {
+    const { gmt_start_millis, duration_millis } = field.value || {};
+    const [timeLeft, setTimeLeft] = useState<number>(0);
+
+    useEffect(() => {
+        if (!gmt_start_millis || !duration_millis) return;
+
+        const endTime = gmt_start_millis + duration_millis;
+
+        const update = () => {
+            const now = Date.now();
+            const diff = Math.max(0, endTime - now);
+            setTimeLeft(Math.floor(diff / 1000));
+        };
+
+        update();
+        const timer = setInterval(update, 1000);
+        return () => clearInterval(timer);
+    }, [gmt_start_millis, duration_millis]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <div className="p-4 bg-orange-50 border border-orange-100 rounded-md text-orange-700 text-center font-bold">
+            {field.label}: {formatTime(timeLeft)}
+        </div>
+    );
+};

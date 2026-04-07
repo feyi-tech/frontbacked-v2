@@ -1,16 +1,40 @@
-export interface PaymentMethod {
-  id: string;
+export interface PaymentField {
   name: string;
-  instructions: string;
-  recommended?: boolean;
+  label: string;
+  type: 'text' | 'password' | 'select' | 'info' | 'countdown';
+  placeholder?: string;
+  required?: boolean;
+  value?: any;
+  itemsUrl?: string;
+}
+
+export interface PaymentMethod {
   type: string;
-  actionText: string;
+  name: string;
+  fields: PaymentField[];
+  actionUrl: string;
+  actionUrlButtonLabel?: string;
+  paymentProcessorId?: string;
+  paymentReference?: string;
 }
 
 export interface PaymentInitResponse {
-  paymentId: string;
-  methods: PaymentMethod[];
-  expiresAt?: string;
+  paymentProcessorId: string;
+  availableMethods: PaymentMethod[];
+  metadata: Record<string, any>;
+}
+
+export interface PaymentChargeResponse {
+  completed?: boolean;
+  status?: 'ok' | 'failed';
+  error?: string;
+  type?: string;
+  name?: string;
+  paymentProcessorId?: string;
+  paymentReference?: string;
+  fields?: PaymentField[];
+  actionUrl?: string;
+  actionUrlButtonLabel?: string;
 }
 
 export interface RechargeableMethod {

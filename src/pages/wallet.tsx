@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import PageContainer from '@/components/PageContainer';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { paymentsApi } from '@/api/payments';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRight, Loader2, History, TrendingUp, Sparkles, AlertCircle, Filter } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import Meta from '@/components/Meta';
 
 const WalletPage = () => {
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
@@ -65,7 +66,8 @@ const WalletPage = () => {
   }, [currentPage, statusFilter]);
 
   return (
-    <PageContainer>
+    <DashboardLayout>
+      <Meta title="Your Wallet" description="Manage your funds and track your recent transactions." />
       <div className="max-w-6xl mx-auto space-y-12 pb-20 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="space-y-2">
@@ -186,7 +188,7 @@ const WalletPage = () => {
           </div>
         </div>
       </div>
-    </PageContainer>
+    </DashboardLayout>
   );
 };
 

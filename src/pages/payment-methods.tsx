@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import PageContainer from '@/components/PageContainer';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { paymentsApi } from '@/api/payments';
 import { RechargeableMethodResponse } from '@/types/payments';
 import { CreditCard, ShieldCheck, Sparkles, AlertCircle, Loader2, Plus, ArrowRight, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { cn } from "@/lib/utils";
+import Meta from '@/components/Meta';
 
 const PaymentMethodsPage = () => {
   const [data, setData] = useState<RechargeableMethodResponse | null>(null);
@@ -38,7 +38,8 @@ const PaymentMethodsPage = () => {
   };
 
   return (
-    <PageContainer>
+    <DashboardLayout>
+      <Meta title="Payment Methods" description="Manage your saved cards and automated payment settings." />
       <div className="max-w-4xl mx-auto space-y-12 pb-20 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="space-y-2">
@@ -170,7 +171,7 @@ const PaymentMethodsPage = () => {
           </div>
         )}
       </div>
-    </PageContainer>
+    </DashboardLayout>
   );
 };
 

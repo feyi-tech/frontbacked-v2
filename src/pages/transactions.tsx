@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import PageContainer from '@/components/PageContainer';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { paymentsApi } from '@/api/payments';
-import { Transaction, TransactionStatus } from '@/types/payments';
+import { Transaction } from '@/types/payments';
 import { StatusBadge } from '@/components/payments/StatusBadge';
 import { Pagination } from '@/components/Pagination';
-import { Search, Filter, ArrowUpRight, ArrowDownLeft, FileText, Calendar, Download, Sparkles, Loader2 } from 'lucide-react';
+import { Search, Filter, ArrowUpRight, ArrowDownLeft, Calendar, Download, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from "@/lib/utils";
+import Meta from '@/components/Meta';
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -75,7 +76,8 @@ const TransactionsPage = () => {
   };
 
   return (
-    <PageContainer>
+    <DashboardLayout>
+      <Meta title="Transactions" description="Complete history of your financial activities." />
       <div className="max-w-6xl mx-auto space-y-12 pb-20 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="space-y-2">
@@ -230,7 +232,7 @@ const TransactionsPage = () => {
           </CardContent>
         </Card>
       </div>
-    </PageContainer>
+    </DashboardLayout>
   );
 };
 

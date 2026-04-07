@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { paymentsApi } from '@/api/payments';
-import { PaymentMethod, PaymentInitResponse } from '@/types/payments';
-import { PaymentMethodCard } from '@/components/payments/PaymentMethodCard';
-import { PaymentInstructionPanel } from '@/components/payments/PaymentInstructionPanel';
+import { PaymentInitResponse } from '@/types/payments';
+import { PaymentFlow } from '@/components/payments/PaymentFlow';
 import { Loader2, ArrowLeft, ShieldCheck, CreditCard, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/router';
+import Meta from '@/components/Meta';
 
 const PayPage = () => {
   const router = useRouter();
@@ -22,7 +22,6 @@ const PayPage = () => {
   const [purpose, setPurpose] = useState<string>(queryPurpose as string || '');
   const [isLoading, setIsLoading] = useState(false);
   const [initResponse, setInitResponse] = useState<PaymentInitResponse | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
   useEffect(() => {
     if (queryAmount) setAmount(queryAmount as string);
@@ -55,10 +54,6 @@ const PayPage = () => {
     }
   };
 
-  const handleMethodSelect = (method: PaymentMethod) => {
-    setSelectedMethod(method);
-  };
-
   const getCurrencySymbol = (curr: string) => {
     switch (curr) {
       case 'EUR': return '€';
@@ -68,16 +63,9 @@ const PayPage = () => {
     }
   };
 
-  const groupedMethods = initResponse?.methods.reduce((acc, method) => {
-    const type = method.type.toLowerCase().includes('card') ? 'Cards' :
-                 method.type.toLowerCase().includes('bank') ? 'Bank Transfer' : 'Other';
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(method);
-    return acc;
-  }, {} as Record<string, PaymentMethod[]>);
-
   return (
     <PageContainer>
+      <Meta title="Make a Payment" description="Securely fund your account or pay for services." />
       <div className="max-w-4xl mx-auto space-y-12 pb-20">
         <div className="space-y-4">
           <Button
@@ -187,47 +175,10 @@ const PayPage = () => {
             </div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-2 gap-12 items-start animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="space-y-10">
-              <h2 className="text-2xl font-bold px-1">Select Payment Method</h2>
-              {groupedMethods && Object.entries(groupedMethods).map(([group, methods]) => (
-                <div key={group} className="space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground px-1">{group}</h3>
-                  <div className="grid gap-4">
-                    {methods.map((method) => (
-                      <PaymentMethodCard
-                        key={method.id}
-                        method={method}
-                        onSelect={handleMethodSelect}
-                        isLoading={isLoading}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="sticky top-24">
-              {selectedMethod ? (
-                <div className="animate-in fade-in zoom-in-95 duration-300">
-                  <PaymentInstructionPanel
-                    method={selectedMethod}
-                    paymentId={initResponse.paymentId}
-                    expiresAt={initResponse.expiresAt}
-                  />
-                </div>
-              ) : (
-                <Card className="border-dashed border-2 bg-muted/30 p-12 text-center h-[400px] flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Sparkles className="w-10 h-10 text-muted-foreground/30" />
-                  </div>
-                  <h3 className="font-bold text-xl mb-2">Ready to Pay?</h3>
-                  <p className="text-muted-foreground max-w-[240px]">
-                    Select a payment method from the list to see instructions and complete your payment.
-                  </p>
-                </Card>
-              )}
-            </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="border-none shadow-2xl overflow-hidden bg-card/50 backdrop-blur-xl p-8">
+                <PaymentFlow initData={initResponse} />
+            </Card>
           </div>
         )}
       </div>

@@ -6,6 +6,8 @@ export const API_BASE_URL = "http://api.frontbacked.v2:8787";
 export const GITHUB_CLIENT_ID = "Ov23liFmwvQxakODFgJc"
 export const GITHUB_APP_NAME = "frontbacked-dev"
 
+export const FLWPK_TEST = "FLWPUBK_TEST-c68f077d32568c565b71c6ebc68df727-X"
+
 export const getSubDomainHost = () => {
     if (process.env.NODE_ENV === "production") {
         return "frontbacked.com";

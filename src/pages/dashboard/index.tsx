@@ -64,6 +64,16 @@ const DashboardIndex = () => {
           </div>
         </div>
 
+        <Link href={`/pay?amount=20&currency=USD`} className="text-sm text-primary font-medium flex items-center gap-1">
+          Test 20 USD Payment
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+
+        <Link href={`/pay?amount=20&currency=NGN`} className="text-sm text-primary font-medium flex items-center gap-1">
+          Test 200 NGN Payment
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, i) => (
             <Link key={i} href={stat.href}>

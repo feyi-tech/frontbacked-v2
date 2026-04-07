@@ -15,7 +15,7 @@ export const paymentsApi = {
     apiClient.get<RechargeableMethodResponse>("/payments/rechargeable-method"),
 
   getWallet: () =>
-    apiClient.get<WalletInfo>("/wallet"),
+    apiClient.get<WalletInfo>("/payments/wallet"),
 
   getTransactions: (params: { page?: number; per_page?: number; status?: string; from?: string; to?: string; search?: string }) => {
     const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
@@ -26,11 +26,11 @@ export const paymentsApi = {
     }, {} as Record<string, string>);
 
     const query = new URLSearchParams(cleanParams).toString();
-    return apiClient.get<TransactionListResponse>(`/transactions?${query}`);
+    return apiClient.get<TransactionListResponse>(`/payments/transactions?${query}`);
   },
 
   getTransaction: (id: string) =>
-    apiClient.get<any>(`/transactions/${id}`),
+    apiClient.get<any>(`/payments/transactions/${id}`),
 
   submitKYC: (data: FormData) =>
     apiClient.post<any>("/kyc", data),

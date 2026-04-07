@@ -24,15 +24,35 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
   const methods = initData.availableMethods;
 
+  const withDefaultFields = (form: Record<string, any>): Record<string, any> => {
+    form.amount = initData.amount;
+    form.currency = initData.currency;
+    form.method = selectedMethod.type;
+    form.details = {
+      ref: initData.metadata?.reference || ""
+    };
+    console.log("Submitting form data:", form);
+    return form;
+  }
+
   useEffect(() => {
+    console.log("Selected method changed:", selectedMethod);
     // If fields are empty for a method, trigger actionUrl immediately upon selection
     if (selectedMethod && (!selectedMethod.fields || selectedMethod.fields.length === 0)) {
-      handleCharge(selectedMethod.actionUrl, {});
+      handleCharge(selectedMethod.actionUrl, withDefaultFields({}));
     } else {
-        setCurrentResponse(null);
-        setFormData({});
+      setCurrentResponse(null);
+      setFormData({});
     }
   }, [selectedMethod]);
+
+  useEffect(() => {
+    console.log("currentResponse:", currentResponse);
+    // If the new response has empty fields, we might need to handle it
+    if (currentResponse?.fields && currentResponse.fields.length === 0 && currentResponse.actionUrl) {
+      handleCharge(currentResponse.actionUrl, withDefaultFields(formData));
+    }
+  }, [currentResponse]);
 
   const handleCharge = async (url: string, data: any) => {
     setIsLoading(true);
@@ -62,10 +82,6 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       } else {
         // Not completed, update state with new fields/actionUrl
         setCurrentResponse(response);
-        // If the new response has empty fields, we might need to handle it
-        if (response.fields && response.fields.length === 0 && response.actionUrl) {
-            handleCharge(response.actionUrl, {});
-        }
       }
     } catch (error: any) {
       toast({
@@ -81,7 +97,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const actionUrl = currentResponse?.actionUrl || selectedMethod.actionUrl;
-    handleCharge(actionUrl, formData);
+    handleCharge(actionUrl, withDefaultFields(formData));
   };
 
   if (paymentStatus === 'success') {

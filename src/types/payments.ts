@@ -19,6 +19,8 @@ export interface PaymentMethod {
 }
 
 export interface PaymentInitResponse {
+  amount: number;
+  currency: string;
   paymentProcessorId: string;
   availableMethods: PaymentMethod[];
   metadata: Record<string, any>;

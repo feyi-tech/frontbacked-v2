@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/api/client';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface DynamicPaymentFieldsProps {
   fields: PaymentField[];
@@ -58,32 +59,65 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
 const SelectField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const loadItemsUrl = async (itemsUrl: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get<any[]>(itemsUrl);
+      // Assuming the API returns a list of items, we might need to map them if they aren't {label, value}
+      setItems(res.map(item => typeof item === 'string' ? { label: item, value: item } : item));
+    } catch (error: any) {
+      console.log("Failed to load select options:", error);
+      setError(error?.message || 'Failed to load options');
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     if (field.itemsUrl) {
-      setLoading(true);
-      apiClient.get<any[]>(field.itemsUrl)
-        .then((res) => {
-          // Assuming the API returns a list of items, we might need to map them if they aren't {label, value}
-          setItems(res.map(item => typeof item === 'string' ? { label: item, value: item } : item));
-        })
-        .finally(() => setLoading(false));
+      loadItemsUrl(field.itemsUrl);
     }
   }, [field.itemsUrl]);
 
   return (
-    <Select value={value} onValueChange={(val) => onChange(field.name, val)} required={field.required}>
-      <SelectTrigger id={field.name}>
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SelectValue placeholder={field.placeholder || "Select option"} />}
-      </SelectTrigger>
-      <SelectContent>
-        {items.map((item) => (
-          <SelectItem key={item.value} value={item.value}>
-            {item.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <Select value={value} onValueChange={(val) => onChange(field.name, val)} required={field.required}>
+        <SelectTrigger id={field.name}>
+          {
+            loading ? <Loader2 className="w-4 h-4 animate-spin" /> 
+            : 
+            <SelectValue placeholder={field.placeholder || "Select option"} />
+          }
+        </SelectTrigger>
+        <SelectContent>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {
+        loading ? null 
+        : 
+        <>
+          {error && 
+          <>
+            <span className="text-red-500 text-sm mt-1">{error}</span>
+            <Button variant="link" size="sm" onClick={(e) => {
+              e.stopPropagation();
+              if (field.itemsUrl) loadItemsUrl(field.itemsUrl);
+            }} className="ml-2">
+              Reload
+            </Button>
+          </>
+          }
+          
+        </>
+      }
+    </>
   );
 };
 

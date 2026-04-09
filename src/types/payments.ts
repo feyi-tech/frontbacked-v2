@@ -1,11 +1,20 @@
 export interface PaymentField {
   name: string;
   label: string;
-  type: 'text' | 'password' | 'select' | 'info' | 'countdown';
+  type: 'text' | 'password' | 'select' | 'info' | 'countdown' | 'otp' | 'number';
   placeholder?: string;
   required?: boolean;
   value?: any;
   itemsUrl?: string;
+}
+
+export interface NextAction {
+  rootCheck?: string;
+  message?: string;
+  actionUrl?: string;
+  fields?: PaymentField[];
+  actionUrlButtonLabel?: string;
+  redirectUrl?: string;
 }
 
 export interface PaymentMethod {
@@ -16,6 +25,7 @@ export interface PaymentMethod {
   actionUrlButtonLabel?: string;
   paymentProcessorId?: string;
   paymentReference?: string;
+  nextAction?: NextAction;
 }
 
 export interface PaymentInitResponse {
@@ -37,6 +47,7 @@ export interface PaymentChargeResponse {
   fields?: PaymentField[];
   actionUrl?: string;
   actionUrlButtonLabel?: string;
+  nextAction?: NextAction;
 }
 
 export interface RechargeableMethod {

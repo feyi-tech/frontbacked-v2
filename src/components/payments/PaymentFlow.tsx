@@ -16,27 +16,28 @@ interface PaymentFlowProps {
 }
 
 export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess }) => {
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(initData.availableMethods[0]);
+  const [methods, setMethods] = useState<PaymentMethod[]>(initData.availableMethods || []);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(methods[0] || null);
   const [currentResponse, setCurrentResponse] = useState<PaymentChargeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const methods = initData.availableMethods;
-
   const withDefaultFields = (form: Record<string, any>): Record<string, any> => {
     const updatedForm = { ...form };
     updatedForm.amount = initData.amount;
     updatedForm.currency = initData.currency;
-    updatedForm.method = selectedMethod.type;
+    if (selectedMethod) {
+      updatedForm.method = selectedMethod.type;
+    }
     updatedForm.details = {
       ref: initData.metadata?.reference || ""
     };
 
     // Ensure 'level' is set to 1 if present in fields and not already set
-    const currentNextAction = currentResponse?.nextAction || selectedMethod.nextAction;
-    const activeFields = currentNextAction?.fields || currentResponse?.fields || selectedMethod.fields || [];
+    const currentNextAction = currentResponse?.nextAction || selectedMethod?.nextAction || initData.nextAction;
+    const activeFields = currentNextAction?.fields || currentResponse?.fields || selectedMethod?.fields || [];
     if (activeFields.some(f => f.name === 'level') && updatedForm.level === undefined) {
       updatedForm.level = 1;
     }
@@ -45,40 +46,41 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     return updatedForm;
   }
 
-  const getActiveFields = (method: PaymentMethod, response: PaymentChargeResponse | null): PaymentField[] => {
-    const nextAction = response?.nextAction || method.nextAction;
+  const getActiveFields = (method: PaymentMethod | null, response: PaymentChargeResponse | null): PaymentField[] => {
+    const nextAction = response?.nextAction || method?.nextAction || initData.nextAction;
     if (nextAction) {
       return nextAction.fields || [];
     }
-    return response?.fields || method.fields || [];
+    return response?.fields || method?.fields || [];
   };
 
-  const getActionUrl = (method: PaymentMethod, response: PaymentChargeResponse | null): string => {
-    const nextAction = response?.nextAction || method.nextAction;
+  const getActionUrl = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string => {
+    const nextAction = response?.nextAction || method?.nextAction || initData.nextAction;
     if (nextAction?.actionUrl) {
       return nextAction.actionUrl;
     }
-    return response?.actionUrl || method.actionUrl;
+    return response?.actionUrl || method?.actionUrl || "";
   };
 
-  const getActionButtonLabel = (method: PaymentMethod, response: PaymentChargeResponse | null): string => {
-    const nextAction = response?.nextAction || method.nextAction;
+  const getActionButtonLabel = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string => {
+    const nextAction = response?.nextAction || method?.nextAction || initData.nextAction;
     if (nextAction?.actionUrlButtonLabel) {
       return nextAction.actionUrlButtonLabel;
     }
-    return response?.actionUrlButtonLabel || method.actionUrlButtonLabel || "Pay Now";
+    return response?.actionUrlButtonLabel || method?.actionUrlButtonLabel || "Pay Now";
   };
 
-  const getMessage = (method: PaymentMethod, response: PaymentChargeResponse | null): string | undefined => {
-    return response?.nextAction?.message || method.nextAction?.message;
+  const getMessage = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string | undefined => {
+    return response?.nextAction?.message || method?.nextAction?.message || initData.nextAction?.message;
   };
 
   useEffect(() => {
+    if (!selectedMethod) return;
     console.log("Selected method changed:", selectedMethod);
     const activeFields = getActiveFields(selectedMethod, null);
     const actionUrl = getActionUrl(selectedMethod, null);
 
-    if (selectedMethod && activeFields.length === 0 && actionUrl) {
+    if (activeFields.length === 0 && actionUrl) {
       handleCharge(actionUrl, withDefaultFields({}));
     } else {
       setCurrentResponse(null);
@@ -88,6 +90,12 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
   useEffect(() => {
     console.log("currentResponse:", currentResponse);
+
+    if (currentResponse?.availableMethods && currentResponse.availableMethods.length > 0) {
+      setMethods(currentResponse.availableMethods);
+      setSelectedMethod(currentResponse.availableMethods[0]);
+      return;
+    }
 
     const nextAction = currentResponse?.nextAction;
     if (nextAction?.redirectUrl) {
@@ -102,6 +110,17 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       handleCharge(actionUrl, withDefaultFields(formData));
     }
   }, [currentResponse]);
+
+  useEffect(() => {
+    // Handle initial state with no methods but a nextAction
+    if (methods.length === 0 && !currentResponse && initData.nextAction) {
+      const activeFields = getActiveFields(null, null);
+      const actionUrl = getActionUrl(null, null);
+      if (activeFields.length === 0 && actionUrl) {
+        handleCharge(actionUrl, withDefaultFields({}));
+      }
+    }
+  }, [methods, currentResponse]);
 
   const handleCharge = async (url: string, data: any) => {
     setIsLoading(true);
@@ -179,79 +198,91 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
   const message = getMessage(selectedMethod, currentResponse);
 
+  const renderForm = (methodName?: string) => (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        {methodName && <h3 className="text-xl font-semibold">{methodName}</h3>}
+        {isLoading && !currentResponse ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {message && (
+              <Alert className="mb-6 bg-primary/5 border-primary/20">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                <AlertTitle className="text-primary font-bold">Action Required</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {message}
+                </AlertDescription>
+              </Alert>
+            )}
+            <DynamicPaymentFields
+              fields={activeFields}
+              onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
+              values={formData}
+            />
+          </>
+        )}
+      </div>
+
+      {activeFields.length > 0 && (
+        <Button type="submit" className="w-full h-12 text-lg" disabled={isLoading}>
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          {actionButtonLabel}
+        </Button>
+      )}
+
+      {currentResponse && activeFields.length === 0 && !isLoading && (
+        <div className="text-center py-4 text-muted-foreground">
+          Processing...
+        </div>
+      )}
+    </form>
+  );
+
   return (
     <div className="w-full">
-      <Tabs
-        defaultValue={methods[0].type}
-        onValueChange={(val) => {
-          const method = methods.find(m => m.type === val);
-          if (method) setSelectedMethod(method);
-        }}
-        className="flex flex-col md:flex-row gap-6"
-      >
-        <TabsList className="flex flex-row md:flex-col h-auto bg-transparent border-b md:border-b-0 md:border-r border-border p-0 items-stretch shrink-0">
-          {methods.map((method) => (
-            <TabsTrigger
-              key={method.type}
-              value={method.type}
-              className="px-4 py-3 md:px-6 md:py-4 justify-start rounded-none border-b-2 md:border-b-0 md:border-r-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary transition-all text-left"
-            >
-              {method.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {methods.length > 0 ? (
+        <Tabs
+          value={selectedMethod?.type || undefined}
+          onValueChange={(val) => {
+            const method = methods.find(m => m.type === val);
+            if (method) setSelectedMethod(method);
+          }}
+          className="flex flex-col md:flex-row gap-6"
+        >
+          <TabsList className="flex flex-row md:flex-col h-auto bg-transparent border-b md:border-b-0 md:border-r border-border p-0 items-stretch shrink-0">
+            {methods.map((method) => (
+              <TabsTrigger
+                key={method.type}
+                value={method.type}
+                className="px-4 py-3 md:px-6 md:py-4 justify-start rounded-none border-b-2 md:border-b-0 md:border-r-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary transition-all text-left"
+              >
+                {method.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        <div className="flex-1">
-          {methods.map((method) => (
-            <TabsContent key={method.type} value={method.type} className="m-0 focus-visible:outline-none focus-visible:ring-0">
-              <Card className="border-none shadow-none bg-transparent">
-                <CardContent className="p-0">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold">{method.name}</h3>
-                      {isLoading && !currentResponse ? (
-                        <div className="flex items-center justify-center py-12">
-                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        </div>
-                      ) : (
-                        <>
-                          {message && (
-                            <Alert className="mb-6 bg-primary/5 border-primary/20">
-                              <AlertCircle className="h-4 w-4 text-primary" />
-                              <AlertTitle className="text-primary font-bold">Action Required</AlertTitle>
-                              <AlertDescription className="text-sm">
-                                {message}
-                              </AlertDescription>
-                            </Alert>
-                          )}
-                          <DynamicPaymentFields
-                            fields={activeFields}
-                            onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
-                            values={formData}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    {activeFields.length > 0 && (
-                      <Button type="submit" className="w-full h-12 text-lg" disabled={isLoading}>
-                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        {actionButtonLabel}
-                      </Button>
-                    )}
-
-                    {currentResponse && activeFields.length === 0 && !isLoading && (
-                        <div className="text-center py-4 text-muted-foreground">
-                            Processing...
-                        </div>
-                    )}
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
-        </div>
-      </Tabs>
+          <div className="flex-1">
+            {methods.map((method) => (
+              <TabsContent key={method.type} value={method.type} className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                <Card className="border-none shadow-none bg-transparent">
+                  <CardContent className="p-0">
+                    {renderForm(method.name)}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            ))}
+          </div>
+        </Tabs>
+      ) : (
+        <Card className="border-none shadow-none bg-transparent">
+          <CardContent className="p-0">
+            {renderForm()}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

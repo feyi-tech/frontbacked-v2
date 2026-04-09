@@ -7,68 +7,10 @@
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 1858ms
- ○ Compiling /pay ...
- ✓ Compiled /pay in 10.2s (578 modules)
- ✓ Compiled in 493ms (578 modules)
- GET /pay 200 in 12245ms
- GET /pay 200 in 232ms
- ○ Compiling /wallet ...
- ✓ Compiled /wallet in 814ms (606 modules)
- GET /wallet 200 in 1332ms
- ✓ Compiled /transactions in 298ms (622 modules)
- GET /transactions 200 in 695ms
- ○ Compiling /payment-methods ...
- ✓ Compiled /payment-methods in 1043ms (629 modules)
- GET /payment-methods 200 in 1442ms
- ✓ Compiled /kyc in 329ms (644 modules)
- GET /kyc 200 in 738ms
- ✓ Compiled in 3.3s (278 modules)
- ✓ Compiled in 663ms (453 modules)
- ✓ Compiled in 498ms (278 modules)
- ✓ Compiled in 393ms (278 modules)
- ✓ Compiled in 549ms (278 modules)
- ✓ Compiled in 360ms (278 modules)
- ○ Compiling /pay ...
- ✓ Compiled /pay in 1203ms (578 modules)
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- /app/.next/server/webpack-runtime.js
-- /app/.next/server/pages/_document.js
-- /app/node_modules/next/dist/server/require.js
-- /app/node_modules/next/dist/server/load-components.js
-- /app/node_modules/next/dist/build/utils.js
-- /app/node_modules/next/dist/build/swc/options.js
-- /app/node_modules/next/dist/build/swc/index.js
-- /app/node_modules/next/dist/build/next-config-ts/transpile-config.js
-- /app/node_modules/next/dist/server/config.js
-- /app/node_modules/next/dist/server/next.js
-- /app/node_modules/next/dist/server/lib/start-server.js
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/pay'
-}
- ○ Compiling /_error ...
- ✓ Compiled /_error in 2.4s (726 modules)
- GET /pay 500 in 3881ms
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- /app/.next/server/webpack-runtime.js
-- /app/.next/server/pages/_document.js
-- /app/node_modules/next/dist/server/require.js
-- /app/node_modules/next/dist/server/load-components.js
-- /app/node_modules/next/dist/build/utils.js
-- /app/node_modules/next/dist/build/swc/options.js
-- /app/node_modules/next/dist/build/swc/index.js
-- /app/node_modules/next/dist/build/next-config-ts/transpile-config.js
-- /app/node_modules/next/dist/server/config.js
-- /app/node_modules/next/dist/server/next.js
-- /app/node_modules/next/dist/server/lib/start-server.js
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/pay'
-}
- GET /pay 500 in 24ms
-[?25h
+ ✓ Ready in 2000ms
+ ○ Compiling /verify-payment-flow ...
+ ✓ Compiled /verify-payment-flow in 10.6s (548 modules)
+ ✓ Compiled in 495ms (548 modules)
+ GET /verify-payment-flow 200 in 12789ms
+ ✓ Compiled in 446ms (278 modules)
+ ✓ Compiled in 94ms (175 modules)

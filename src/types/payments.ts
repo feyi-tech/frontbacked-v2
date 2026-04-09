@@ -31,9 +31,10 @@ export interface PaymentMethod {
 export interface PaymentInitResponse {
   amount: number;
   currency: string;
-  paymentProcessorId: string;
-  availableMethods: PaymentMethod[];
-  metadata: Record<string, any>;
+  paymentProcessorId?: string;
+  availableMethods?: PaymentMethod[];
+  metadata?: Record<string, any>;
+  nextAction?: NextAction;
 }
 
 export interface PaymentChargeResponse {
@@ -48,6 +49,7 @@ export interface PaymentChargeResponse {
   actionUrl?: string;
   actionUrlButtonLabel?: string;
   nextAction?: NextAction;
+  availableMethods?: PaymentMethod[];
 }
 
 export interface RechargeableMethod {

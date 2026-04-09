@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { apiClient } from '@/api/client';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface DynamicPaymentFieldsProps {
   fields: PaymentField[];
@@ -16,12 +17,24 @@ interface DynamicPaymentFieldsProps {
 export const DynamicPaymentFields: React.FC<DynamicPaymentFieldsProps> = ({ fields, onChange, values }) => {
   return (
     <div className="space-y-4">
-      {fields.map((field) => (
-        <div key={field.name} className="space-y-2">
-          <Label htmlFor={field.name}>{field.label}</Label>
-          <RenderField field={field} onChange={onChange} value={values[field.name]} />
-        </div>
-      ))}
+      {fields.map((field) => {
+        if (field.name === 'level' && field.type === 'number') {
+          return (
+            <input
+              key={field.name}
+              type="hidden"
+              name={field.name}
+              value={values[field.name] || 1}
+            />
+          );
+        }
+        return (
+          <div key={field.name} className="space-y-2">
+            <Label htmlFor={field.name}>{field.label}</Label>
+            <RenderField field={field} onChange={onChange} value={values[field.name]} />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -30,6 +43,7 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
   switch (field.type) {
     case 'text':
     case 'password':
+    case 'number':
       return (
         <Input
           id={field.name}
@@ -39,6 +53,23 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
           value={value || ''}
           onChange={(e) => onChange(field.name, e.target.value)}
         />
+      );
+    case 'otp':
+      return (
+        <InputOTP
+          maxLength={6}
+          value={value || ''}
+          onChange={(val) => onChange(field.name, val)}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
       );
     case 'select':
       return <SelectField field={field} onChange={onChange} value={value} />;

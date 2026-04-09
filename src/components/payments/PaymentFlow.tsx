@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { PaymentMethod, PaymentInitResponse, PaymentChargeResponse, PaymentField } from '@/types/payments';
+import { PaymentMethod, PaymentInitResponse, PaymentChargeResponse, PaymentField, NextAction } from '@/types/payments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DynamicPaymentFields } from './DynamicPaymentFields';
 import { apiClient } from '@/api/client';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface PaymentFlowProps {
   initData: PaymentInitResponse;
@@ -25,21 +26,60 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const methods = initData.availableMethods;
 
   const withDefaultFields = (form: Record<string, any>): Record<string, any> => {
-    form.amount = initData.amount;
-    form.currency = initData.currency;
-    form.method = selectedMethod.type;
-    form.details = {
+    const updatedForm = { ...form };
+    updatedForm.amount = initData.amount;
+    updatedForm.currency = initData.currency;
+    updatedForm.method = selectedMethod.type;
+    updatedForm.details = {
       ref: initData.metadata?.reference || ""
     };
-    console.log("Submitting form data:", form);
-    return form;
+
+    // Ensure 'level' is set to 1 if present in fields and not already set
+    const currentNextAction = currentResponse?.nextAction || selectedMethod.nextAction;
+    const activeFields = currentNextAction?.fields || currentResponse?.fields || selectedMethod.fields || [];
+    if (activeFields.some(f => f.name === 'level') && updatedForm.level === undefined) {
+      updatedForm.level = 1;
+    }
+
+    console.log("Submitting form data:", updatedForm);
+    return updatedForm;
   }
+
+  const getActiveFields = (method: PaymentMethod, response: PaymentChargeResponse | null): PaymentField[] => {
+    const nextAction = response?.nextAction || method.nextAction;
+    if (nextAction) {
+      return nextAction.fields || [];
+    }
+    return response?.fields || method.fields || [];
+  };
+
+  const getActionUrl = (method: PaymentMethod, response: PaymentChargeResponse | null): string => {
+    const nextAction = response?.nextAction || method.nextAction;
+    if (nextAction?.actionUrl) {
+      return nextAction.actionUrl;
+    }
+    return response?.actionUrl || method.actionUrl;
+  };
+
+  const getActionButtonLabel = (method: PaymentMethod, response: PaymentChargeResponse | null): string => {
+    const nextAction = response?.nextAction || method.nextAction;
+    if (nextAction?.actionUrlButtonLabel) {
+      return nextAction.actionUrlButtonLabel;
+    }
+    return response?.actionUrlButtonLabel || method.actionUrlButtonLabel || "Pay Now";
+  };
+
+  const getMessage = (method: PaymentMethod, response: PaymentChargeResponse | null): string | undefined => {
+    return response?.nextAction?.message || method.nextAction?.message;
+  };
 
   useEffect(() => {
     console.log("Selected method changed:", selectedMethod);
-    // If fields are empty for a method, trigger actionUrl immediately upon selection
-    if (selectedMethod && (!selectedMethod.fields || selectedMethod.fields.length === 0)) {
-      handleCharge(selectedMethod.actionUrl, withDefaultFields({}));
+    const activeFields = getActiveFields(selectedMethod, null);
+    const actionUrl = getActionUrl(selectedMethod, null);
+
+    if (selectedMethod && activeFields.length === 0 && actionUrl) {
+      handleCharge(actionUrl, withDefaultFields({}));
     } else {
       setCurrentResponse(null);
       setFormData({});
@@ -48,9 +88,18 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
   useEffect(() => {
     console.log("currentResponse:", currentResponse);
-    // If the new response has empty fields, we might need to handle it
-    if (currentResponse?.fields && currentResponse.fields.length === 0 && currentResponse.actionUrl) {
-      handleCharge(currentResponse.actionUrl, withDefaultFields(formData));
+
+    const nextAction = currentResponse?.nextAction;
+    if (nextAction?.redirectUrl) {
+        window.location.href = nextAction.redirectUrl;
+        return;
+    }
+
+    const activeFields = getActiveFields(selectedMethod, currentResponse);
+    const actionUrl = getActionUrl(selectedMethod, currentResponse);
+
+    if (currentResponse && activeFields.length === 0 && actionUrl && !currentResponse.completed) {
+      handleCharge(actionUrl, withDefaultFields(formData));
     }
   }, [currentResponse]);
 
@@ -80,7 +129,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
           });
         }
       } else {
-        // Not completed, update state with new fields/actionUrl
+        // Not completed, update state with new fields/actionUrl/nextAction
         setCurrentResponse(response);
       }
     } catch (error: any) {
@@ -96,7 +145,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const actionUrl = currentResponse?.actionUrl || selectedMethod.actionUrl;
+    const actionUrl = getActionUrl(selectedMethod, currentResponse);
     handleCharge(actionUrl, withDefaultFields(formData));
   };
 
@@ -126,8 +175,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     );
   }
 
-  const activeFields = currentResponse?.fields || selectedMethod?.fields || [];
-  const actionButtonLabel = currentResponse?.actionUrlButtonLabel || selectedMethod?.actionUrlButtonLabel || "Pay Now";
+  const activeFields = getActiveFields(selectedMethod, currentResponse);
+  const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
+  const message = getMessage(selectedMethod, currentResponse);
 
   return (
     <div className="w-full">
@@ -164,11 +214,22 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
                           <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         </div>
                       ) : (
-                        <DynamicPaymentFields
-                          fields={activeFields}
-                          onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
-                          values={formData}
-                        />
+                        <>
+                          {message && (
+                            <Alert className="mb-6 bg-primary/5 border-primary/20">
+                              <AlertCircle className="h-4 w-4 text-primary" />
+                              <AlertTitle className="text-primary font-bold">Action Required</AlertTitle>
+                              <AlertDescription className="text-sm">
+                                {message}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          <DynamicPaymentFields
+                            fields={activeFields}
+                            onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
+                            values={formData}
+                          />
+                        </>
                       )}
                     </div>
 

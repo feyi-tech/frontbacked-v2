@@ -60,22 +60,34 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
         />
       );
     case 'otp':
-      return (
-        <InputOTP
-          maxLength={6}
-          value={value || ''}
-          onChange={(val) => onChange(field.name, val)}
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-      );
+      return field.length? 
+      (
+          <InputOTP
+            maxLength={field.length}
+            value={value || ''}
+            onChange={(val) => onChange(field.name, val)}
+          >
+            <InputOTPGroup>
+              {Array.from({ length: field.length }).map((_, i) => (
+                <InputOTPSlot
+                  key={i} index={i}
+                  className="w-10 h-10 bg-background rounded-md border-2 border-muted focus:border-primary data-[state=active]:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
+        )
+        :
+        (
+          <Input
+            id={field.name}
+            type="password"
+            placeholder={field.placeholder}
+            required={field.required}
+            value={value || ''}
+            onChange={(e) => onChange(field.name, e.target.value)}
+          />
+        );
     case 'select':
       return <SelectField field={field} onChange={onChange} value={value} />;
     case 'info':

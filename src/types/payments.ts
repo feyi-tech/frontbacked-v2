@@ -1,7 +1,13 @@
+export type FieldType = 
+'text' | 'number' | 'password' | 'select' | 
+'email' | 'info' | 'otp' | 'phone' | 'countdown' |
+'date' | 'timestamp';
+
 export interface PaymentField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'password' | 'select' | 'email' | 'info' | 'countdown' | 'otp' | 'date' | 'timestamp' | 'phone';
+  type: FieldType;
+  length?: number; // For OTP fields
   placeholder?: string;
   required?: boolean;
   value?: any;

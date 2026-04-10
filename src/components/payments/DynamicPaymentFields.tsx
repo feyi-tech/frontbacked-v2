@@ -40,10 +40,11 @@ export const DynamicPaymentFields: React.FC<DynamicPaymentFieldsProps> = ({ fiel
 };
 
 const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
-  switch (field.type) {
+  switch (field.type.toLowerCase()) {
     case 'text':
     case 'password':
     case 'number':
+    case 'email':
       return (
         <Input
           id={field.name}

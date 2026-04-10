@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PAYMENT_INIT_URL } from '@/compos/api/payments';
 
 interface PaymentFlowProps {
   initData: PaymentInitResponse;
@@ -24,16 +25,18 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const withDefaultFields = (form: Record<string, any>): Record<string, any> => {
-    const updatedForm = { ...form };
-    updatedForm.amount = initData.amount;
-    updatedForm.currency = initData.currency;
+  const withDefaultFields = (actionUrl: string, form: Record<string, any>): Record<string, any> => {
+    let updatedForm = { ...form };
     if (selectedMethod) {
       updatedForm.method = selectedMethod.type;
     }
-    updatedForm.details = {
-      ref: initData.metadata?.reference || ""
-    };
+    
+    if(actionUrl === PAYMENT_INIT_URL) {
+      updatedForm = { ...updatedForm, ...initData };
+
+    } else {
+      updatedForm.originalRequestUrl = PAYMENT_INIT_URL;
+    }
 
     // Ensure 'level' is set to 1 if present in fields and not already set
     const currentNextAction = currentResponse?.nextAction || selectedMethod?.nextAction || initData.nextAction;
@@ -62,12 +65,12 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     return response?.actionUrl || method?.actionUrl || "";
   };
 
-  const getActionButtonLabel = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string => {
+  const getActionButtonLabel = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string | null => {
     const nextAction = response?.nextAction || method?.nextAction || initData.nextAction;
     if (nextAction?.actionUrlButtonLabel) {
       return nextAction.actionUrlButtonLabel;
     }
-    return response?.actionUrlButtonLabel || method?.actionUrlButtonLabel || "Pay Now";
+    return response?.actionUrlButtonLabel || method?.actionUrlButtonLabel || null;
   };
 
   const getMessage = (method: PaymentMethod | null, response: PaymentChargeResponse | null): string | undefined => {
@@ -81,7 +84,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     const actionUrl = getActionUrl(selectedMethod, null);
 
     if (activeFields.length === 0 && actionUrl) {
-      handleCharge(actionUrl, withDefaultFields({}));
+      handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
     } else {
       setCurrentResponse(null);
       setFormData({});
@@ -105,9 +108,13 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
     const activeFields = getActiveFields(selectedMethod, currentResponse);
     const actionUrl = getActionUrl(selectedMethod, currentResponse);
+    const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
 
-    if (currentResponse && activeFields.length === 0 && actionUrl && !currentResponse.completed) {
-      handleCharge(actionUrl, withDefaultFields(formData));
+    console.log("Active fields for current response:", activeFields);
+    console.log("Action URL for current response:", actionUrl);
+
+    if (currentResponse && activeFields.length === 0 && actionUrl && !actionButtonLabel) {
+      handleCharge(actionUrl, withDefaultFields(actionUrl, formData));
     }
   }, [currentResponse]);
 
@@ -116,8 +123,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     if (methods.length === 0 && !currentResponse && initData.nextAction) {
       const activeFields = getActiveFields(null, null);
       const actionUrl = getActionUrl(null, null);
-      if (activeFields.length === 0 && actionUrl) {
-        handleCharge(actionUrl, withDefaultFields({}));
+      const actionButtonLabel = getActionButtonLabel(null, null);
+      if (activeFields.length === 0 && actionUrl && !actionButtonLabel) {
+        handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
       }
     }
   }, [methods, currentResponse]);
@@ -165,7 +173,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const actionUrl = getActionUrl(selectedMethod, currentResponse);
-    handleCharge(actionUrl, withDefaultFields(formData));
+    handleCharge(actionUrl, withDefaultFields(actionUrl, formData));
   };
 
   if (paymentStatus === 'success') {
@@ -226,10 +234,10 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
         )}
       </div>
 
-      {activeFields.length > 0 && (
+      { !isLoading && (activeFields.length > 0 || actionButtonLabel) && (
         <Button type="submit" className="w-full h-12 text-lg" disabled={isLoading}>
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          {actionButtonLabel}
+          {actionButtonLabel || "Continue"}
         </Button>
       )}
 

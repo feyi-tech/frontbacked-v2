@@ -7,9 +7,10 @@ import {
   KYCStatus
 } from "../types/payments";
 
+export const PAYMENT_INIT_URL = "/payments/init";
 export const paymentsApi = {
   init: (data: { amount: number; currency: string; purpose?: string }) =>
-    apiClient.post<PaymentInitResponse>("/payments/init", data),
+    apiClient.post<PaymentInitResponse>(PAYMENT_INIT_URL, data),
 
   getRechargeableMethod: () =>
     apiClient.get<RechargeableMethodResponse>("/payments/rechargeable-method"),

@@ -4,9 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/api/client';
-import { Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 interface DynamicPaymentFieldsProps {
   fields: PaymentField[];
@@ -83,9 +87,68 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
       );
     case 'countdown':
       return <CountdownField field={field} />;
+    case 'date':
+      return <DateField field={field} onChange={onChange} value={value} />;
+    case 'timestamp':
+      return <TimestampField field={field} onChange={onChange} value={value} />;
+    case 'phone':
+      return <PhoneField field={field} onChange={onChange} value={value} />;
     default:
       return null;
   }
+};
+
+const TimestampField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
+  return (
+    <Input
+      id={field.name}
+      type="datetime-local"
+      placeholder={field.placeholder}
+      required={field.required}
+      value={value || ''}
+      onChange={(e) => onChange(field.name, e.target.value)}
+    />
+  );
+};
+
+const PhoneField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
+  return (
+    <Input
+      id={field.name}
+      type="tel"
+      placeholder={field.placeholder}
+      required={field.required}
+      value={value || ''}
+      onChange={(e) => onChange(field.name, e.target.value)}
+    />
+  );
+};
+
+const DateField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant={"outline"}
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? format(new Date(value), "PPP") : <span>{field.placeholder || "Pick a date"}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value ? new Date(value) : undefined}
+          onSelect={(date) => onChange(field.name, date ? format(date, "yyyy-MM-dd") : undefined)}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 const SelectField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {

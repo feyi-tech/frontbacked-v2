@@ -1,7 +1,7 @@
 export interface PaymentField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'password' | 'select' | 'email' | 'info' | 'countdown' | 'otp';
+  type: 'text' | 'number' | 'password' | 'select' | 'email' | 'info' | 'countdown' | 'otp' | 'date' | 'timestamp' | 'phone';
   placeholder?: string;
   required?: boolean;
   value?: any;

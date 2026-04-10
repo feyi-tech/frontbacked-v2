@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 interface DynamicPaymentFieldsProps {
   fields: PaymentField[];
@@ -125,13 +126,12 @@ const TimestampField: React.FC<{ field: PaymentField; onChange: (name: string, v
 
 const PhoneField: React.FC<{ field: PaymentField; onChange: (name: string, value: any) => void; value: any }> = ({ field, onChange, value }) => {
   return (
-    <Input
+    <PhoneInput
       id={field.name}
-      type="tel"
       placeholder={field.placeholder}
       required={field.required}
       value={value || ''}
-      onChange={(e) => onChange(field.name, e.target.value)}
+      onChange={(val) => onChange(field.name, val)}
     />
   );
 };

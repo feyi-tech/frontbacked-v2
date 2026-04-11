@@ -30,7 +30,7 @@ export interface PaymentMethod {
   actionUrl: string;
   actionUrlButtonLabel?: string;
   paymentProcessorId?: string;
-  paymentReference?: string;
+  reference?: string;
   nextAction?: NextAction;
 }
 
@@ -50,7 +50,7 @@ export interface PaymentChargeResponse {
   type?: string;
   name?: string;
   paymentProcessorId?: string;
-  paymentReference?: string;
+  reference?: string;
   fields?: PaymentField[];
   actionUrl?: string;
   actionUrlButtonLabel?: string;

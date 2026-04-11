@@ -9,7 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PAYMENT_INIT_URL } from '@/compos/api/payments';
+import { PAYMENT_CHARGE_URL, PAYMENT_INIT_URL } from '@/compos/api/payments';
 
 interface PaymentFlowProps {
   initData: PaymentInitResponse;
@@ -26,13 +26,24 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const [errorMessage, setErrorMessage] = useState('');
 
   const withDefaultFields = (actionUrl: string, form: Record<string, any>): Record<string, any> => {
-    let updatedForm = { ...form };
+    let updatedForm: Record<string, any> = { ...form, reference: currentResponse?.reference };
     if (selectedMethod) {
       updatedForm.method = selectedMethod.type;
     }
     
     if(actionUrl === PAYMENT_INIT_URL) {
       updatedForm = { ...updatedForm, ...initData };
+
+    } else if(actionUrl.startsWith(PAYMENT_CHARGE_URL)) {
+      console.log(initData, form, currentResponse?.reference);
+      updatedForm = { 
+        amount: initData.amount,
+        currency: initData.currency,
+        method: selectedMethod?.type,
+        processorId: currentResponse?.paymentProcessorId || selectedMethod?.paymentProcessorId || initData.paymentProcessorId, 
+        details: form, 
+        reference: currentResponse?.reference 
+      };
 
     } else {
       updatedForm.originalRequestUrl = PAYMENT_INIT_URL;

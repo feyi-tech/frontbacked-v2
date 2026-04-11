@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { PaymentMethod, PaymentInitResponse, PaymentChargeResponse, PaymentField, NextAction } from '@/types/payments';
+import { PaymentMethod, PaymentInitResponse, PaymentChargeResponse, PaymentField, NextAction, ScenarioList } from '@/types/payments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { DynamicPaymentFields } from './DynamicPaymentFields';
 import { apiClient } from '@/api/client';
 import { toast } from '@/hooks/use-toast';
@@ -19,6 +21,16 @@ interface PaymentFlowProps {
 export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess }) => {
   const [methods, setMethods] = useState<PaymentMethod[]>(initData.availableMethods || []);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(methods[0] || null);
+
+  const getScenarioOptions = (scenarios: ScenarioList | undefined, methodType: string | undefined): string[] => {
+    if (!scenarios) return [];
+    const options = [...(scenarios.all || [])];
+    if (methodType && (scenarios as any)[methodType]) {
+      options.push(...(scenarios as any)[methodType]);
+    }
+    return Array.from(new Set(options));
+  };
+
   const [currentResponse, setCurrentResponse] = useState<PaymentChargeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -56,6 +68,13 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       updatedForm.level = 1;
     }
 
+    if (formData.scenarios) {
+      updatedForm.scenarios = formData.scenarios;
+    }
+    if (formData.scenarioResponses) {
+      updatedForm.scenarioResponses = formData.scenarioResponses;
+    }
+
     console.log("Submitting form data:", updatedForm);
     return updatedForm;
   }
@@ -88,13 +107,26 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     return response?.nextAction?.message || method?.nextAction?.message || initData.nextAction?.message;
   };
 
+  const getScenarios = (method: PaymentMethod | null, response: PaymentChargeResponse | null): ScenarioList | undefined => {
+    return response?.nextAction?.scenarios || response?.scenarios || method?.nextAction?.scenarios || method?.scenarios || initData.nextAction?.scenarios || initData.scenarios;
+  };
+
+  const getScenarioResponses = (method: PaymentMethod | null, response: PaymentChargeResponse | null): ScenarioList | undefined => {
+    return response?.nextAction?.scenarioResponses || response?.scenarioResponses || method?.nextAction?.scenarioResponses || method?.scenarioResponses || initData.nextAction?.scenarioResponses || initData.scenarioResponses;
+  };
+
   useEffect(() => {
     if (!selectedMethod) return;
     console.log("Selected method changed:", selectedMethod);
     const activeFields = getActiveFields(selectedMethod, null);
     const actionUrl = getActionUrl(selectedMethod, null);
 
-    if (activeFields.length === 0 && actionUrl) {
+    const scenarios = getScenarios(selectedMethod, null);
+    const hasScenarios = getScenarioOptions(scenarios, selectedMethod?.type).length > 0;
+    const scenarioResponses = getScenarioResponses(selectedMethod, null);
+    const hasScenarioResponses = getScenarioOptions(scenarioResponses, selectedMethod?.type).length > 0;
+
+    if (activeFields.length === 0 && actionUrl && !hasScenarios && !hasScenarioResponses) {
       handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
     } else {
       setCurrentResponse(null);
@@ -121,10 +153,15 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     const actionUrl = getActionUrl(selectedMethod, currentResponse);
     const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
 
+    const scenarios = getScenarios(selectedMethod, currentResponse);
+    const hasScenarios = getScenarioOptions(scenarios, selectedMethod?.type).length > 0;
+    const scenarioResponses = getScenarioResponses(selectedMethod, currentResponse);
+    const hasScenarioResponses = getScenarioOptions(scenarioResponses, selectedMethod?.type).length > 0;
+
     console.log("Active fields for current response:", activeFields);
     console.log("Action URL for current response:", actionUrl);
 
-    if (currentResponse && activeFields.length === 0 && actionUrl && !actionButtonLabel) {
+    if (currentResponse && activeFields.length === 0 && actionUrl && !actionButtonLabel && !hasScenarios && !hasScenarioResponses) {
       handleCharge(actionUrl, withDefaultFields(actionUrl, formData));
     }
   }, [currentResponse]);
@@ -135,7 +172,13 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       const activeFields = getActiveFields(null, null);
       const actionUrl = getActionUrl(null, null);
       const actionButtonLabel = getActionButtonLabel(null, null);
-      if (activeFields.length === 0 && actionUrl && !actionButtonLabel) {
+
+      const scenarios = getScenarios(null, null);
+      const hasScenarios = getScenarioOptions(scenarios, undefined).length > 0;
+      const scenarioResponses = getScenarioResponses(null, null);
+      const hasScenarioResponses = getScenarioOptions(scenarioResponses, undefined).length > 0;
+
+      if (activeFields.length === 0 && actionUrl && !actionButtonLabel && !hasScenarios && !hasScenarioResponses) {
         handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
       }
     }
@@ -241,6 +284,56 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
               onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
               values={formData}
             />
+
+            {(() => {
+              const scenarios = getScenarios(selectedMethod, currentResponse);
+              const scenarioOptions = getScenarioOptions(scenarios, selectedMethod?.type);
+
+              const scenarioResponses = getScenarioResponses(selectedMethod, currentResponse);
+              const scenarioResponseOptions = getScenarioOptions(scenarioResponses, selectedMethod?.type);
+
+              return (
+                <>
+                  {scenarioOptions.length > 0 && (
+                    <div className="space-y-2">
+                      <Label htmlFor="scenarios">Scenario</Label>
+                      <Select
+                        value={formData.scenarios}
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, scenarios: val }))}
+                      >
+                        <SelectTrigger id="scenarios">
+                          <SelectValue placeholder="Select a scenario" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {scenarioOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {scenarioResponseOptions.length > 0 && (
+                    <div className="space-y-2">
+                      <Label htmlFor="scenarioResponses">Scenario Response</Label>
+                      <Select
+                        value={formData.scenarioResponses}
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, scenarioResponses: val }))}
+                      >
+                        <SelectTrigger id="scenarioResponses">
+                          <SelectValue placeholder="Select a scenario response" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {scenarioResponseOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
       </div>

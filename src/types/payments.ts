@@ -14,6 +14,14 @@ export interface PaymentField {
   itemsUrl?: string;
 }
 
+export interface ScenarioList {
+  all: string[];
+  card: string[];
+  mobileMoney: string[];
+  bank_transfer: string[];
+  ussd: string[];
+}
+
 export interface NextAction {
   rootCheck?: string;
   message?: string;
@@ -21,6 +29,8 @@ export interface NextAction {
   fields?: PaymentField[];
   actionUrlButtonLabel?: string;
   redirectUrl?: string;
+  scenarios?: ScenarioList;
+  scenarioResponses?: ScenarioList;
 }
 
 export interface PaymentMethod {
@@ -32,6 +42,8 @@ export interface PaymentMethod {
   paymentProcessorId?: string;
   reference?: string;
   nextAction?: NextAction;
+  scenarios?: ScenarioList;
+  scenarioResponses?: ScenarioList;
 }
 
 export interface PaymentInitResponse {
@@ -41,6 +53,8 @@ export interface PaymentInitResponse {
   availableMethods?: PaymentMethod[];
   metadata?: Record<string, any>;
   nextAction?: NextAction;
+  scenarios?: ScenarioList;
+  scenarioResponses?: ScenarioList;
 }
 
 export interface PaymentChargeResponse {
@@ -56,6 +70,8 @@ export interface PaymentChargeResponse {
   actionUrlButtonLabel?: string;
   nextAction?: NextAction;
   availableMethods?: PaymentMethod[];
+  scenarios?: ScenarioList;
+  scenarioResponses?: ScenarioList;
 }
 
 export interface RechargeableMethod {

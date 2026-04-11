@@ -107,12 +107,12 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     return response?.nextAction?.message || method?.nextAction?.message || initData.nextAction?.message;
   };
 
-  const getScenarios = (method: PaymentMethod | null, response: PaymentChargeResponse | null): ScenarioList | undefined => {
-    return response?.nextAction?.scenarios || response?.scenarios || method?.nextAction?.scenarios || method?.scenarios || initData.nextAction?.scenarios || initData.scenarios;
+  const getScenarios = (): ScenarioList | undefined => {
+    return initData.scenarios;
   };
 
-  const getScenarioResponses = (method: PaymentMethod | null, response: PaymentChargeResponse | null): ScenarioList | undefined => {
-    return response?.nextAction?.scenarioResponses || response?.scenarioResponses || method?.nextAction?.scenarioResponses || method?.scenarioResponses || initData.nextAction?.scenarioResponses || initData.scenarioResponses;
+  const getScenarioResponses = (): ScenarioList | undefined => {
+    return initData.scenarioResponses;
   };
 
   useEffect(() => {
@@ -121,9 +121,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     const activeFields = getActiveFields(selectedMethod, null);
     const actionUrl = getActionUrl(selectedMethod, null);
 
-    const scenarios = getScenarios(selectedMethod, null);
+    const scenarios = getScenarios();
     const hasScenarios = getScenarioOptions(scenarios, selectedMethod?.type).length > 0;
-    const scenarioResponses = getScenarioResponses(selectedMethod, null);
+    const scenarioResponses = getScenarioResponses();
     const hasScenarioResponses = getScenarioOptions(scenarioResponses, selectedMethod?.type).length > 0;
 
     if (activeFields.length === 0 && actionUrl && !hasScenarios && !hasScenarioResponses) {
@@ -153,9 +153,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     const actionUrl = getActionUrl(selectedMethod, currentResponse);
     const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
 
-    const scenarios = getScenarios(selectedMethod, currentResponse);
+    const scenarios = getScenarios();
     const hasScenarios = getScenarioOptions(scenarios, selectedMethod?.type).length > 0;
-    const scenarioResponses = getScenarioResponses(selectedMethod, currentResponse);
+    const scenarioResponses = getScenarioResponses();
     const hasScenarioResponses = getScenarioOptions(scenarioResponses, selectedMethod?.type).length > 0;
 
     console.log("Active fields for current response:", activeFields);
@@ -173,9 +173,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       const actionUrl = getActionUrl(null, null);
       const actionButtonLabel = getActionButtonLabel(null, null);
 
-      const scenarios = getScenarios(null, null);
+      const scenarios = getScenarios();
       const hasScenarios = getScenarioOptions(scenarios, undefined).length > 0;
-      const scenarioResponses = getScenarioResponses(null, null);
+      const scenarioResponses = getScenarioResponses();
       const hasScenarioResponses = getScenarioOptions(scenarioResponses, undefined).length > 0;
 
       if (activeFields.length === 0 && actionUrl && !actionButtonLabel && !hasScenarios && !hasScenarioResponses) {
@@ -286,10 +286,10 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
             />
 
             {(() => {
-              const scenarios = getScenarios(selectedMethod, currentResponse);
+              const scenarios = getScenarios();
               const scenarioOptions = getScenarioOptions(scenarios, selectedMethod?.type);
 
-              const scenarioResponses = getScenarioResponses(selectedMethod, currentResponse);
+              const scenarioResponses = getScenarioResponses();
               const scenarioResponseOptions = getScenarioOptions(scenarioResponses, selectedMethod?.type);
 
               return (

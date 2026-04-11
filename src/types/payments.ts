@@ -29,8 +29,6 @@ export interface NextAction {
   fields?: PaymentField[];
   actionUrlButtonLabel?: string;
   redirectUrl?: string;
-  scenarios?: ScenarioList;
-  scenarioResponses?: ScenarioList;
 }
 
 export interface PaymentMethod {
@@ -42,8 +40,6 @@ export interface PaymentMethod {
   paymentProcessorId?: string;
   reference?: string;
   nextAction?: NextAction;
-  scenarios?: ScenarioList;
-  scenarioResponses?: ScenarioList;
 }
 
 export interface PaymentInitResponse {
@@ -70,8 +66,6 @@ export interface PaymentChargeResponse {
   actionUrlButtonLabel?: string;
   nextAction?: NextAction;
   availableMethods?: PaymentMethod[];
-  scenarios?: ScenarioList;
-  scenarioResponses?: ScenarioList;
 }
 
 export interface RechargeableMethod {

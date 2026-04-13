@@ -64,13 +64,13 @@ const DashboardIndex = () => {
           </div>
         </div>
 
-        <Link href={`/pay?amount=20&currency=USD`} className="text-sm text-primary font-medium flex items-center gap-1">
-          Test 20 USD Payment
+        <Link href={`/pay?amount=100&currency=USD`} className="text-sm text-primary font-medium flex items-center gap-1">
+          Test 100 USD Payment
           <ArrowRight className="h-4 w-4" />
         </Link>
 
-        <Link href={`/pay?amount=20&currency=NGN`} className="text-sm text-primary font-medium flex items-center gap-1">
-          Test 200 NGN Payment
+        <Link href={`/pay?amount=100&currency=NGN`} className="text-sm text-primary font-medium flex items-center gap-1">
+          Test 100 NGN Payment
           <ArrowRight className="h-4 w-4" />
         </Link>
 

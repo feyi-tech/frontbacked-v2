@@ -56,7 +56,7 @@ const RenderField: React.FC<{ field: PaymentField; onChange: (name: string, valu
           type={field.type}
           placeholder={field.placeholder}
           required={field.required}
-          value={value || ''}
+          value={value}
           onChange={(e) => onChange(field.name, e.target.value)}
         />
       );
@@ -174,7 +174,7 @@ const SelectField: React.FC<{ field: PaymentField; onChange: (name: string, valu
     try {
       const res = await apiClient.get<any[]>(itemsUrl);
       // Assuming the API returns a list of items, we might need to map them if they aren't {label, value}
-      setItems(res.map(item => typeof item === 'string' ? { label: item, value: item } : item));
+      setItems(res.map(item => typeof item === 'string' ? { label: item, value: item } : { label: item[field.itemLabel as string], value: item[field.itemValue as string] }));
     } catch (error: any) {
       console.log("Failed to load select options:", error);
       setError(error?.message || 'Failed to load options');

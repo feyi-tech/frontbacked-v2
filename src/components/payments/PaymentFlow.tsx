@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { PaymentMethod, PaymentInitResponse, PaymentChargeResponse, PaymentField, NextAction, ScenarioList } from '@/types/payments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PAYMENT_CHARGE_URL, PAYMENT_INIT_URL } from '@/compos/api/payments';
+import { PAYMENT_CHARGE_URL, PAYMENT_INIT_URL, PAYMENT_VALIDATE_URL } from '@/compos/api/payments';
 
 interface PaymentFlowProps {
   initData: PaymentInitResponse;
@@ -34,11 +34,13 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const [currentResponse, setCurrentResponse] = useState<PaymentChargeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [scenario, setScenario] = useState<string>();
+  const [scenarioResponse, setScenarioResponse] = useState<string>();
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'failed'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   const withDefaultFields = (actionUrl: string, form: Record<string, any>): Record<string, any> => {
-    let updatedForm: Record<string, any> = { ...form, reference: currentResponse?.reference };
+    let updatedForm: Record<string, any> = { ...form };
     if (selectedMethod) {
       updatedForm.method = selectedMethod.type;
     }
@@ -47,14 +49,29 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       updatedForm = { ...updatedForm, ...initData };
 
     } else if(actionUrl.startsWith(PAYMENT_CHARGE_URL)) {
-      console.log(initData, form, currentResponse?.reference);
+      console.log(initData, form);
       updatedForm = { 
         amount: initData.amount,
         currency: initData.currency,
         method: selectedMethod?.type,
-        processorId: currentResponse?.paymentProcessorId || selectedMethod?.paymentProcessorId || initData.paymentProcessorId, 
-        details: form, 
-        reference: currentResponse?.reference 
+        details: form
+      };
+
+      if (scenario) {
+        updatedForm.scenario = scenario;
+      }
+      if (scenarioResponse) {
+        updatedForm.scenarioResponse = scenarioResponse;
+      }
+
+    } else if(actionUrl.startsWith(PAYMENT_VALIDATE_URL)) {
+      console.log(initData, form, currentResponse);
+      updatedForm = { 
+        authorizationInput: {
+          type: currentResponse?.nextAction?.type,
+          value: form,
+        }, 
+        chargeId: currentResponse?.chargeId
       };
 
     } else {
@@ -66,13 +83,6 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     const activeFields = currentNextAction?.fields || currentResponse?.fields || selectedMethod?.fields || [];
     if (activeFields.some(f => f.name === 'level') && updatedForm.level === undefined) {
       updatedForm.level = 1;
-    }
-
-    if (formData.scenarios) {
-      updatedForm.scenarios = formData.scenarios;
-    }
-    if (formData.scenarioResponses) {
-      updatedForm.scenarioResponses = formData.scenarioResponses;
     }
 
     console.log("Submitting form data:", updatedForm);
@@ -129,10 +139,23 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     if (activeFields.length === 0 && actionUrl && !hasScenarios && !hasScenarioResponses) {
       handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
     } else {
-      setCurrentResponse(null);
       setFormData({});
+      setCurrentResponse(null);
     }
   }, [selectedMethod]);
+
+  useEffect(() => {
+    //ToBeRemovedLater: Prefill for fast testing
+    if(selectedMethod?.nextAction?.type === 'card' && !currentResponse?.nextAction) {
+      console.log("!!!Will prefilling card details for testing");
+      setFormData({
+        card_number: '5531886652142950',
+        expiry_month: '09',
+        expiry_year: '32',
+        cvv: '564',
+      });
+    }
+  }, [selectedMethod, currentResponse]);
 
   useEffect(() => {
     console.log("currentResponse:", currentResponse);
@@ -161,9 +184,10 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     console.log("Active fields for current response:", activeFields);
     console.log("Action URL for current response:", actionUrl);
 
-    if (currentResponse && activeFields.length === 0 && actionUrl && !actionButtonLabel && !hasScenarios && !hasScenarioResponses) {
+    if (currentResponse && activeFields.length === 0 && actionUrl && !actionButtonLabel) {
       handleCharge(actionUrl, withDefaultFields(actionUrl, formData));
     }
+
   }, [currentResponse]);
 
   useEffect(() => {
@@ -178,7 +202,11 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
       const scenarioResponses = getScenarioResponses();
       const hasScenarioResponses = getScenarioOptions(scenarioResponses, undefined).length > 0;
 
-      if (activeFields.length === 0 && actionUrl && !actionButtonLabel && !hasScenarios && !hasScenarioResponses) {
+      if (
+        activeFields.length === 0 && actionUrl && 
+        !actionButtonLabel && 
+        !hasScenarios && !hasScenarioResponses
+      ) {
         handleCharge(actionUrl, withDefaultFields(actionUrl, {}));
       }
     }
@@ -189,37 +217,44 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
     try {
       const response = await apiClient.post<PaymentChargeResponse>(url, data);
 
-      if (response.completed) {
-        if (response.status === 'ok') {
-          setPaymentStatus('success');
-          Swal.fire({
-            title: 'Success!',
-            text: 'Payment successful!',
-            icon: 'success',
-            confirmButtonColor: 'hsl(var(--primary))',
-          });
-          if (onSuccess) onSuccess();
-        } else {
-          setPaymentStatus('failed');
-          setErrorMessage(response.error || "Payment failed");
-          Swal.fire({
-            title: 'Payment Failed',
-            text: response.error || 'Payment failed',
-            icon: 'error',
-            confirmButtonColor: 'hsl(var(--primary))',
-          });
-        }
+      if (response.chargeCompleted) {
+        setPaymentStatus('success');
+        Swal.fire({
+          title: 'Success!',
+          text: 'Payment successful!',
+          icon: 'success',
+          confirmButtonColor: 'hsl(var(--primary))',
+        });
+        if (onSuccess) onSuccess();
       } else {
         // Not completed, update state with new fields/actionUrl/nextAction
         setCurrentResponse(response);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred during payment",
-        variant: "destructive",
-      });
+      const data = error.response?.data;
+      const errorMessage = data?.message || error.message || "An error occurred during payment";
+
+      console.log("Charge error:", error, "Response data:", data);
+      
+      if(data?.chargeFailed) {
+        setPaymentStatus('failed');
+        setErrorMessage(errorMessage);
+        Swal.fire({
+          title: 'Payment Failed',
+          text: errorMessage,
+          icon: 'error',
+          confirmButtonColor: 'hsl(var(--primary))',
+        });
+
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "An error occurred during payment",
+          variant: "destructive",
+        });
+      }
     } finally {
+      setFormData({});
       setIsLoading(false);
     }
   };
@@ -260,6 +295,11 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
   const actionButtonLabel = getActionButtonLabel(selectedMethod, currentResponse);
   const message = getMessage(selectedMethod, currentResponse);
 
+  const scenarios = getScenarios();
+  const hasScenarios = getScenarioOptions(scenarios, undefined).length > 0;
+  const scenarioResponses = getScenarioResponses();
+  const hasScenarioResponses = getScenarioOptions(scenarioResponses, undefined).length > 0;
+
   const renderForm = (methodName?: string) => (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
@@ -296,12 +336,12 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
                 <>
                   {scenarioOptions.length > 0 && (
                     <div className="space-y-2">
-                      <Label htmlFor="scenarios">Scenario</Label>
+                      <Label htmlFor="scenario">Scenario</Label>
                       <Select
-                        value={formData.scenarios}
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, scenarios: val }))}
+                        value={scenario}
+                        onValueChange={(val) => setScenario(val)}
                       >
-                        <SelectTrigger id="scenarios">
+                        <SelectTrigger id="scenario">
                           <SelectValue placeholder="Select a scenario" />
                         </SelectTrigger>
                         <SelectContent>
@@ -315,12 +355,12 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
 
                   {scenarioResponseOptions.length > 0 && (
                     <div className="space-y-2">
-                      <Label htmlFor="scenarioResponses">Scenario Response</Label>
+                      <Label htmlFor="scenarioResponse">Scenario Response</Label>
                       <Select
-                        value={formData.scenarioResponses}
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, scenarioResponses: val }))}
+                        value={scenarioResponse}
+                        onValueChange={(val) => setScenarioResponse(val)}
                       >
-                        <SelectTrigger id="scenarioResponses">
+                        <SelectTrigger id="scenarioResponse">
                           <SelectValue placeholder="Select a scenario response" />
                         </SelectTrigger>
                         <SelectContent>
@@ -338,7 +378,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({ initData, onSuccess })
         )}
       </div>
 
-      { !isLoading && (activeFields.length > 0 || actionButtonLabel) && (
+      { !isLoading && (activeFields.length > 0 || actionButtonLabel || activeFields.length === 0 || (currentResponse?.availableMethods && (hasScenarios || hasScenarioResponses))) && (
         <Button type="submit" className="w-full h-12 text-lg" disabled={isLoading}>
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           {actionButtonLabel || "Continue"}

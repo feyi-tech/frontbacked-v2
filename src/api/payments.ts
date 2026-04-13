@@ -9,6 +9,7 @@ import {
 
 export const PAYMENT_INIT_URL = "/payments/init";
 export const PAYMENT_CHARGE_URL = "/payments/charge";
+export const PAYMENT_VALIDATE_URL = "/payments/validate";
 export const paymentsApi = {
   init: (data: { amount: number; currency: string; purpose?: string }) =>
     apiClient.post<PaymentInitResponse>(PAYMENT_INIT_URL, data),

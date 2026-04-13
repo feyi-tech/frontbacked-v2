@@ -12,6 +12,8 @@ export interface PaymentField {
   required?: boolean;
   value?: any;
   itemsUrl?: string;
+  itemValue?: string;
+  itemLabel?: string;
 }
 
 export interface ScenarioList {
@@ -23,7 +25,7 @@ export interface ScenarioList {
 }
 
 export interface NextAction {
-  rootCheck?: string;
+  type?: string;
   message?: string;
   actionUrl?: string;
   fields?: PaymentField[];
@@ -45,7 +47,6 @@ export interface PaymentMethod {
 export interface PaymentInitResponse {
   amount: number;
   currency: string;
-  paymentProcessorId?: string;
   availableMethods?: PaymentMethod[];
   metadata?: Record<string, any>;
   nextAction?: NextAction;
@@ -54,13 +55,14 @@ export interface PaymentInitResponse {
 }
 
 export interface PaymentChargeResponse {
-  completed?: boolean;
+  chargeCompleted?: boolean;
+  chargeFailed?: boolean;
   status?: 'ok' | 'failed';
   error?: string;
   type?: string;
   name?: string;
-  paymentProcessorId?: string;
-  reference?: string;
+  reference: string;
+  chargeId: string;
   fields?: PaymentField[];
   actionUrl?: string;
   actionUrlButtonLabel?: string;

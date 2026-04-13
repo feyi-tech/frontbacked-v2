@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export interface DNSProviderInfo {
   name: string;
   url: string;
@@ -43,15 +45,13 @@ const PROVIDERS: { name: string; pattern: RegExp; url: (domain: string) => strin
 
 export async function detectDNSProvider(domain: string): Promise<DNSProviderInfo | null> {
   try {
-    const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=NS`, {
+    const response = await axios.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=NS`, {
       headers: {
         accept: 'application/dns-json',
       },
     });
 
-    if (!response.ok) return null;
-
-    const data = await response.json();
+    const data = response.data;
     if (!data.Answer || data.Answer.length === 0) return null;
 
     for (const answer of data.Answer) {
